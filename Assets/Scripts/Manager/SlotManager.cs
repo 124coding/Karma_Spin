@@ -9,15 +9,35 @@ public class SlotManager : MonoBehaviour
     public int minStackSize;
     public int maxStackSize;
 
+    public BattleManager battleManager;
+
+    private int stoppedReelCount = 0;
+    private SymbolData[,] currentGrid = new SymbolData[3, 3];
+
     // TODO: 각 릴 객체나 칸마다 기믹 상태(isFrozen, isBlinded)를 주입하고 관리하는 로직 추가 필요
 
     public void SpinAllReels()
     {
-        foreach(var reel in reels)
+        stoppedReelCount = 0;
+
+        for (int i = 0; i < reels.Length; ++i)
         {
-            StartCoroutine(reel.Spin(results =>
+            int reelIndex = i;
+
+            StartCoroutine(reels[i].Spin(results =>
             {
-                Debug.Log($"릴 정지! 결과: {results[0].type}, {results[1].type}, {results[2].type}");
+                currentGrid[reelIndex, 0] = results[0];
+                currentGrid[reelIndex, 1] = results[1];
+                currentGrid[reelIndex, 2] = results[2];
+
+                stoppedReelCount++;
+
+                // 3개의 릴이 모두 멈췄다면?
+                if (stoppedReelCount == 3)
+                {
+                    Debug.Log("모든 릴 정지 완료! 데미지 정산을 시작합니다.");
+                    battleManager.OnReelStopped(currentGrid);
+                }
             }));
         }
     }
@@ -45,7 +65,9 @@ public class SlotManager : MonoBehaviour
 
                 if(symbol.type != SymbolType.Taegeuk && symbol.type != SymbolType.Bad)
                 {
-                    stackSize = Random.Range(minStackSize, maxStackSize + 1);
+                    int roll1 = Random.Range(minStackSize, maxStackSize + 1);
+                    int roll2 = Random.Range(minStackSize, maxStackSize + 1);
+                    stackSize = Mathf.Min(roll1, roll2);
                     if (stackSize > remainingCount) stackSize = remainingCount;
                 }
 

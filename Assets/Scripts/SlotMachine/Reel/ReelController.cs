@@ -57,12 +57,6 @@ public class ReelController : MonoBehaviour
         float snapElapsed = 0f;
 
         Vector2 startPos = reelContent.anchoredPosition;
-        Vector2 targetPos = Vector2.zero;
-
-        if(startPos.y < -symbolHeight / 2f)
-        {
-            targetPos = new Vector2(0, -symbolHeight);
-        }
 
         while(snapElapsed < snapDuration)
         {
@@ -74,13 +68,16 @@ public class ReelController : MonoBehaviour
         }
 
         reelContent.anchoredPosition = Vector2.zero;
-
         isSpinning = false;
 
+        int visibleOffset = 2;
+
+        int firstVisibleIndex = (currentStripIndex + visibleOffset) % reelStrip.Count;
+
         SymbolData[] results = new SymbolData[3];
-        results[0] = reelStrip[currentStripIndex];
-        results[1] = reelStrip[(currentStripIndex + 1) % reelStrip.Count];
-        results[2] = reelStrip[(currentStripIndex + 2) % reelStrip.Count];
+        results[0] = reelStrip[firstVisibleIndex];
+        results[1] = reelStrip[(firstVisibleIndex + 1) % reelStrip.Count];
+        results[2] = reelStrip[(firstVisibleIndex + 2) % reelStrip.Count];
 
         onComplete?.Invoke(results);
     }
