@@ -12,6 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68bd1afddf66fb34dba10e6eafc5a5a2, type: 3}
   m_Name: Test
   m_EditorClassIdentifier: Assembly-CSharp::BossData
+  symbolType: 3
   bossName: Test
   maxHPPerPhase: 500
-  totalPhases: 3
+  totalPhases: 5
+  bossSprite: {fileID: 0}
+  sealPhases: 0300000001000000
+  metalBaseBreakRequirement: 1500

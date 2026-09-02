@@ -16,13 +16,61 @@ public class SlotManager : MonoBehaviour
 
     // TODO: 각 릴 객체나 칸마다 기믹 상태(isFrozen, isBlinded)를 주입하고 관리하는 로직 추가 필요
 
+<<<<<<< Updated upstream
     public void SpinAllReels()
+=======
+    // TODO: Test 삭제 필요
+    private void Start()
+    {
+        SettingReels();
+    }
+
+    public void OnClickSpinButton()
+    {
+        if (isSpinning) return; // 이미 돌고 있으면 무시
+        StartCoroutine(SpinSequenceRoutine());
+    }
+
+    private IEnumerator SpinSequenceRoutine()
+    {
+        if (isSpinning) yield break; // 이미 돌고 있으면 즉시 취소
+
+        isSpinning = true;
+        spinButton.interactable = false; // 버튼 비활성화 (시각적 처리)
+
+        SpinAllReels();
+        yield return null;
+    }
+
+    private void SpinAllReels()
+>>>>>>> Stashed changes
     {
         stoppedReelCount = 0;
+
+        int lockedIndex = -1;
+        BossManager boss = battleManager.BossManager;
+
+        if (boss.CurrentSymbol == SymbolType.Earth && boss.remainingEarthLockTurns > 0)
+        {
+            lockedIndex = boss.lockedReelIndex;
+        }
 
         for (int i = 0; i < reels.Length; ++i)
         {
             int reelIndex = i;
+
+            if(reelIndex == lockedIndex)
+            {
+                stoppedReelCount++;
+
+                if (stoppedReelCount == 3)
+                {
+                    Debug.Log("모든 릴 정지 완료! 데미지 정산을 시작합니다.");
+                    battleManager.OnReelStopped(currentGrid);
+                }
+
+                continue;
+            }
 
             StartCoroutine(reels[i].Spin(results =>
             {
@@ -116,5 +164,11 @@ public class SlotManager : MonoBehaviour
         }
 
         return finalStrip;
+    }
+
+    public void UnlockSpinButton()
+    {
+        isSpinning = false;
+        spinButton.interactable = true;
     }
 }

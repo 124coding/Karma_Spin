@@ -6,6 +6,9 @@ public class BattleManager : MonoBehaviour
     [Header("테스트용 데이터")]
     public BossData testBossData;
 
+    [Header("슬롯 매니저 연결")]
+    public SlotManager slotManager;
+
     [SerializeField] private BossManager bossManager;
 
     [SerializeField] private int baseTurnLimit = 5; // 기본 데미지
@@ -26,7 +29,16 @@ public class BattleManager : MonoBehaviour
     public float TaegeukMultiplier => taegeukMultiplier;
     public float BadMultiplier => badMultiplier;
 
+<<<<<<< Updated upstream
     public void TestInitializeButton()
+=======
+    public BossManager BossManager => bossManager;
+
+    public SymbolType BossSymbolType => bossSymbolType;
+
+    // TODO: Test 삭제 필요
+    private void Start()
+>>>>>>> Stashed changes
     {
         SetInitialize(testBossData);
     }
@@ -103,5 +115,9 @@ public class BattleManager : MonoBehaviour
                 Debug.Log("피냐타 모드 진행 중... 다음 스핀을 돌려 남은 턴을 소모하세요!");
             }
         }
+
+        bossManager.OnTurnEnd();
+
+        if (slotManager != null) slotManager.UnlockSpinButton();
     }
 }
