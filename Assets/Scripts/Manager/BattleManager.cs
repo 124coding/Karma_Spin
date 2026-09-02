@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class BattleManager : MonoBehaviour
 {
+    [Header("테스트용 로그")]
+    [SerializeField] private BattleLogUI battleLogUI;
+
     [Header("테스트용 데이터")]
     public BossData testBossData;
 
@@ -57,63 +60,83 @@ public class BattleManager : MonoBehaviour
 
     private IEnumerator LogDamageRoutine(DamageReport report)
     {
-        Debug.Log("<color=yellow>--- 데미지 정산 시작 ---</color>");
+        battleLogUI.ClearLog();
+
+        string startMsg = "<color=yellow>--- 데미지 정산 시작 ---</color>";
+        Debug.Log(startMsg);
+        battleLogUI.AddLog(startMsg);
 
         if (report.logs.Count == 0)
         {
-            Debug.Log("<color=gray>당첨 실패... 데미지 0</color>");
+            string failMsg = "<color=gray>당첨 실패... 턴이 차감됩니다.</color>";
+            Debug.Log(failMsg);
+            battleLogUI.AddLog(failMsg);
         }
         else
         {
             foreach(var log in report.logs)
             {
+                string lineMsg = "";
+
                 if (log.elementType == SymbolType.Bad || log.elementType == SymbolType.Taegeuk)
                 {
-                    // 흉, 태극 등 '전체 데미지'에 영향을 주는 특수 잭팟
                     string color = log.elementType == SymbolType.Taegeuk ? "yellow" : "purple";
-                    string msg = log.elementType == SymbolType.Taegeuk ? "축복" : "페널티";
+                    string msgType = log.elementType == SymbolType.Taegeuk ? "축복" : "페널티";
 
-                    Debug.Log($"<color={color}>[{log.elementType} {msg} 잭팟!] 총 데미지 배율 x{log.multiplier} 적용 -> 현재까지의 총합 데미지: {log.currentElementDamage}</color>");
+                    // 기존에 작성했던 리치 텍스트를 변수에 담습니다.
+                    lineMsg = $"<color={color}>[{log.elementType} {msgType} 잭팟!] <size=150%><b>x{log.multiplier}</b></size> -> 총합: {log.currentElementDamage}</color>";
+
                     // TODO: 흉, 태극 잭팟 연출 넣기
                 }
                 else
                 {
-                    // 일반 오행 속성 빙고 및 상성(약점/내성)
-                    Debug.Log($"[{log.elementType} 당첨!] 개별 배율 x{log.multiplier} 획득 -> [{log.elementType}] 속성 누적 데미지: <color=orange>{log.currentElementDamage}</color>");
+                    lineMsg = $"[{log.elementType} 빙고!] <size=150%><b>x{log.multiplier}</b></size> -> [{log.elementType}] 누적: <color=orange>{log.currentElementDamage}</color>";
+
                     // TODO: 연출 넣기
                 }
 
+                Debug.Log(lineMsg);
+                battleLogUI.AddLog(lineMsg);
+
                 yield return new WaitForSeconds(0.5f);
             }
+
+            string finalMsg = $"<color=red><b> 모든 속성 데미지 합산! 최종 폭발 데미지: {report.finalDamage}</b></color>";
+            Debug.Log(finalMsg);
+            battleLogUI.AddLog(finalMsg);
 
             bossManager.TakeDamage(report.finalDamage);
         }
 
         currentTurns--;
-        Debug.Log($"남은 턴 수: {currentTurns}");
+        string turnMsg = $"남은 턴 수: {currentTurns}";
+        Debug.Log(turnMsg);
+        battleLogUI.AddLog(turnMsg);
 
-        if(currentTurns <= 0)
+        if (currentTurns <= 0)
         {
             if (bossManager.isDead)
             {
-                // 보스를 잡은 상태로 턴을 다 썼다면 -> 스테이지 클리어!
-                Debug.Log($"<color=yellow>스테이지 클리어!</color>");
-                Debug.Log($"<color=yellow>최종 누적 오버킬 데미지: {bossManager.accumulatedOverkill} -> 보상으로 환산합니다.</color>");
+                string clearMsg = $"<color=yellow>스테이지 클리어!</color>\n <color=yellow>최종 누적 오버킬 데미지: {bossManager.accumulatedOverkill} -> 보상으로 환산합니다.</color>";
+                Debug.Log(clearMsg);
+                battleLogUI.AddLog(clearMsg);
                 // TODO: 오버킬 데미지를 골드나 재화로 변환하는 로직 호출
             }
             else
             {
-                // 보스를 못 잡았는데 턴을 다 썼다면 -> 게임 오버
-                Debug.Log("<color=gray>턴을 모두 소모했습니다. 보스 토벌 실패 (Game Over).</color>");
+                string failMsg = "<color=gray>턴을 모두 소모했습니다. 보스 토벌 실패 (Game Over).</color>";
+                Debug.Log(failMsg);
+                battleLogUI.AddLog(failMsg);
                 // TODO: 게임 오버 UI 호출
             }
         }
         else
         {
-            // 턴이 남았다면 다음 스핀 기다리기
             if (bossManager.isDead)
             {
-                Debug.Log("피냐타 모드 진행 중... 다음 스핀을 돌려 남은 턴을 소모하세요!");
+                string pinataMsg = "<color=cyan>피냐타 모드 진행 중... 다음 스핀을 돌려 남은 턴을 소모하세요!</color>";
+                Debug.Log(pinataMsg);
+                battleLogUI.AddLog(pinataMsg);
             }
         }
     }

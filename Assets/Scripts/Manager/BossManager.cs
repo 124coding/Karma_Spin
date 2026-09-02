@@ -9,6 +9,7 @@ public class BossManager : MonoBehaviour
 
     [Header("UI 연결")]
     public BossHealthBar healthBarUI;
+    public BattleLogUI battleLogUI;
 
     public SymbolType CurrentSymbol => currentSymbol;
 
@@ -27,7 +28,9 @@ public class BossManager : MonoBehaviour
 
         healthBarUI.UpdateHealthUI(currentHP, currentBoss.maxHPPerPhase, currentPhase);
 
-        Debug.Log($"[{currentBoss.bossName}] 출현! (HP: {currentHP} x {currentPhase}줄)");
+        string initMsg = $"<color=white><b>[{currentBoss.bossName}] 출현! (HP: {currentHP} x {currentPhase}줄, 속성: {currentSymbol.ToString()})</b></color>";
+        Debug.Log(initMsg);
+        if (battleLogUI != null) battleLogUI.AddLog(initMsg);
     }
 
     public void TakeDamage(float damage)
@@ -35,9 +38,16 @@ public class BossManager : MonoBehaviour
         if (isDead)
         {
             accumulatedOverkill += damage;
+            string overkillMsg = $"<color=cyan>[피냐타 타격] {damage} 오버킬 누적! (총합: {accumulatedOverkill})</color>";
+            Debug.Log(overkillMsg);
+            if (battleLogUI != null) battleLogUI.AddLog(overkillMsg);
+            return;
         }
 
-        Debug.Log($"[타격] 총 {damage} 데미지 유입!");
+        string hitMsg = $"[타격] 총 {damage} 데미지 유입!";
+        Debug.Log(hitMsg);
+        if (battleLogUI != null) battleLogUI.AddLog(hitMsg);
+
         float remainingDamage = damage; // 깎고 남은 관통 데미지
 
         while(remainingDamage > 0 && currentPhase > 0)
@@ -82,7 +92,10 @@ public class BossManager : MonoBehaviour
         currentPhase = 0;
         currentHP = 0;
         accumulatedOverkill = initialOverkill;
-        Debug.Log("[보스 처치] 보스를 성공적으로 토벌했습니다!");
+
+        string dieMsg = "<color=red><b>[보스 처치] 보스를 성공적으로 토벌했습니다!</b></color>";
+        Debug.Log(dieMsg);
+        if (battleLogUI != null) battleLogUI.AddLog(dieMsg);
 
         // TODO: 피냐타 모드 진입 이벤트 호출 (overkillDamage 전달)
     }
