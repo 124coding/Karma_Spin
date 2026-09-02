@@ -4,39 +4,39 @@ using TMPro;
 
 public class BossHealthBar : MonoBehaviour
 {
-    [Header("UI ¿¬°á")]
+    [Header("UI ì—°ê²°")]
     public Image currentBar;
     public Image nextBar;
     public TextMeshProUGUI phaseText;
 
-    [Header("»ö»ó ¼³Á¤")]
+    [Header("ìƒ‰ìƒ ì„¤ì •")]
     public Color[] phaseColors;
     public Color shieldColor = new Color(0.7f, 0.7f, 0.7f);
 
-    // BossManager¿¡¼­ µ¥¹ÌÁö¸¦ ÀÔÀ» ¶§¸¶´Ù ÇØ´ç ÇÔ¼ö È£Ãâ
+    // BossManagerì—ì„œ ë°ë¯¸ì§€ë¥¼ ì…ì„ ë•Œë§ˆë‹¤ í•´ë‹¹ í•¨ìˆ˜ í˜¸ì¶œ
     public void UpdateHealthUI(float currentHP, float maxHP, int currentPhase, bool isShielded = false)
     {
-        // ÇöÀç Ã¼·Â¹Ù ±ï±â
+        // í˜„ì¬ ì²´ë ¥ë°” ê¹ê¸°
         currentBar.fillAmount = currentHP / maxHP;
         
-        // ³²Àº ÁÙ ¼ö ÅØ½ºÆ® °»½Å
+        // ë‚¨ì€ ì¤„ ìˆ˜ í…ìŠ¤íŠ¸ ê°±ì‹ 
         phaseText.text = $"x{currentPhase}";
 
-        // »ö»ó ¾÷µ¥ÀÌÆ®
+        // ìƒ‰ìƒ ì—…ë°ì´íŠ¸
         if(currentPhase > 0)
         {
             if (isShielded)
             {
-                // ½¯µå°¡ ÄÑÁ® ÀÖ´Ù¸é ±İ¼Ó/È¸»öÀ¸·Î µ¤¾î¾º¿ì°í ÅØ½ºÆ® Ãß°¡
+                // ì‰´ë“œê°€ ì¼œì ¸ ìˆë‹¤ë©´ ê¸ˆì†/íšŒìƒ‰ìœ¼ë¡œ ë®ì–´ì”Œìš°ê³  í…ìŠ¤íŠ¸ ì¶”ê°€
                 currentBar.color = shieldColor;
                 nextBar.color = shieldColor;
-                phaseText.text = $"x{currentPhase} <size=70%><color=#CCCCCC>(ºÀÀÎµÊ)</color></size>";
+                phaseText.text = $"x{currentPhase} <size=70%><color=#CCCCCC>(ë´‰ì¸ë¨)</color></size>";
             }
             else
             {
                 if(currentPhase == 1)
                 {
-                    // Æò¼Ò¿¡´Â Á¤»óÀûÀÎ ÆäÀÌÁî »ö»ó Àû¿ë
+                    // í‰ì†Œì—ëŠ” ì •ìƒì ì¸ í˜ì´ì¦ˆ ìƒ‰ìƒ ì ìš©
                     currentBar.color = GetColor(currentPhase);
                     nextBar.color = new Color(0f, 0f, 0f);
                 }
@@ -51,9 +51,9 @@ public class BossHealthBar : MonoBehaviour
         }
         else
         {
-            // ÇÇ³ÄÅ¸ ¸ğµå(0ÁÙ) ÁøÀÔ ½ÃÀÇ Ã³¸®
-            currentBar.color = Color.gray; // »÷µå¹é »ö»ó
-            nextBar.color = Color.white; // ¹è°æ»ö
+            // í”¼ëƒíƒ€ ëª¨ë“œ(0ì¤„) ì§„ì… ì‹œì˜ ì²˜ë¦¬
+            currentBar.color = Color.gray; // ìƒŒë“œë°± ìƒ‰ìƒ
+            nextBar.color = Color.white; // ë°°ê²½ìƒ‰
             phaseText.text = "Dead";
         }
     }

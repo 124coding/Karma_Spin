@@ -5,17 +5,15 @@ public class BossManager : MonoBehaviour
 {
     private BossData currentBoss;
     private float currentHP;
-    private int currentPhase; // ÇöÀç ³²Àº Ã¼·Â ÁÙ °³¼ö
-<<<<<<< Updated upstream
-=======
+    private int currentPhase; // í˜„ì¬ ë‚¨ì€ ì²´ë ¥ ì¤„ ê°œìˆ˜
     private SymbolType currentSymbol;
 
-    [Header("UI ¿¬°á")]
+    [Header("UI ì—°ê²°")]
     public BossHealthBar healthBarUI;
     public BattleLogUI battleLogUI;
 
-    public int remainingEarthLockTurns { get; private set; } = 0; // ³²Àº Àá±İ ÅÏ ¼ö
-    public int lockedReelIndex { get; private set; } = -1;       // ÇöÀç Àá±ä ¸±ÀÇ ¹øÈ£ (0, 1, 2)
+    public int remainingEarthLockTurns { get; private set; } = 0; // ë‚¨ì€ ì ê¸ˆ í„´ ìˆ˜
+    public int lockedReelIndex { get; private set; } = -1;       // í˜„ì¬ ì ê¸´ ë¦´ì˜ ë²ˆí˜¸ (0, 1, 2)
     private bool isEarthLockJustActivated = false;
 
     public bool isShieldActive { get; private set; } = false;
@@ -25,9 +23,8 @@ public class BossManager : MonoBehaviour
 
 
     public SymbolType CurrentSymbol => currentSymbol;
->>>>>>> Stashed changes
 
-    // ÇÇ³ÄÅ¸ ¸ğµå °ü·Ã º¯¼ö
+    // í”¼ëƒíƒ€ ëª¨ë“œ ê´€ë ¨ ë³€ìˆ˜
     public bool isDead { get; private set; } = false;
     public float accumulatedOverkill { get; private set; } = 0f;
 
@@ -38,10 +35,10 @@ public class BossManager : MonoBehaviour
         currentHP = currentBoss.maxHPPerPhase;
         isDead = false;
         accumulatedOverkill = 0f;
+        currentSymbol = currentBoss.symbolType;
 
-<<<<<<< Updated upstream
-        Debug.Log($"[{currentBoss.bossName}] ÃâÇö! (HP: {currentHP} x {currentPhase}ÁÙ)");
-=======
+        healthBarUI.UpdateHealthUI(currentHP, currentBoss.maxHPPerPhase, currentPhase);
+
         triggeredSealPhases.Clear();
         isShieldActive = false;
         isShieldJustActivated = false;
@@ -52,10 +49,9 @@ public class BossManager : MonoBehaviour
 
         healthBarUI.UpdateHealthUI(currentHP, currentBoss.maxHPPerPhase, currentPhase, isShieldActive);
 
-        string initMsg = $"<color=white><b>[{currentBoss.bossName}] ÃâÇö! (HP: {currentHP} x {currentPhase}ÁÙ, ¼Ó¼º: {currentSymbol.ToString()})</b></color>";
+        string initMsg = $"<color=white><b>[{currentBoss.bossName}] ì¶œí˜„! (HP: {currentHP} x {currentPhase}ì¤„, ì†ì„±: {currentSymbol.ToString()})</b></color>";
         Debug.Log(initMsg);
         if (battleLogUI != null) battleLogUI.AddLog(initMsg);
->>>>>>> Stashed changes
     }
 
     public void TakeDamage(float damage)
@@ -63,11 +59,12 @@ public class BossManager : MonoBehaviour
         if (isDead)
         {
             accumulatedOverkill += damage;
+            string overkillMsg = $"<color=cyan>[í”¼ëƒíƒ€ íƒ€ê²©] {damage} ì˜¤ë²„í‚¬ ëˆ„ì ! (ì´í•©: {accumulatedOverkill})</color>";
+            Debug.Log(overkillMsg);
+            if (battleLogUI != null) battleLogUI.AddLog(overkillMsg);
+            return;
         }
 
-<<<<<<< Updated upstream
-        Debug.Log($"[Å¸°İ] ÃÑ {damage} µ¥¹ÌÁö À¯ÀÔ!");
-=======
         bool isMetal = (currentSymbol == SymbolType.Metal);
         bool isEarth = (currentSymbol == SymbolType.Earth);
 
@@ -75,27 +72,26 @@ public class BossManager : MonoBehaviour
         {
             if(damage >= currentBreakRequirement)
             {
-                isShieldActive = false; // ÆÄ±« ¼º°ø
-                string breakMsg = $"<color=yellow>[ÇÑ°è µ¹ÆÄ] {damage} µ¥¹ÌÁö·Î Ã¼·Â ºÀÀÎÀ» ¹Ú»ì³Â½À´Ï´Ù!</color>";
+                isShieldActive = false; // íŒŒê´´ ì„±ê³µ
+                string breakMsg = $"<color=yellow>[í•œê³„ ëŒíŒŒ] {damage} ë°ë¯¸ì§€ë¡œ ì²´ë ¥ ë´‰ì¸ì„ ë°•ì‚´ëƒˆìŠµë‹ˆë‹¤!</color>";
                 Debug.Log(breakMsg);
                 if (battleLogUI != null) battleLogUI.AddLog(breakMsg);
             }
             else
             {
-                string blockMsg = $"<color=grey>[ºÀÀÎµÊ] µ¥¹ÌÁö({damage})°¡ ºÎÁ·ÇÏ¿© Æ¨°Ü³µ½À´Ï´Ù. (¿ä±¸Ä¡: {currentBreakRequirement})</color>";
+                string blockMsg = $"<color=grey>[ë´‰ì¸ë¨] ë°ë¯¸ì§€({damage})ê°€ ë¶€ì¡±í•˜ì—¬ íŠ•ê²¨ë‚¬ìŠµë‹ˆë‹¤. (ìš”êµ¬ì¹˜: {currentBreakRequirement})</color>";
                 Debug.Log(blockMsg);
                 if (battleLogUI != null) battleLogUI.AddLog(blockMsg);
                 return;
             }
         }
 
-        string hitMsg = $"[Å¸°İ] ÃÑ {damage} µ¥¹ÌÁö À¯ÀÔ!";
+        string hitMsg = $"[íƒ€ê²©] ì´ {damage} ë°ë¯¸ì§€ ìœ ì…!";
         Debug.Log(hitMsg);
         if (battleLogUI != null) battleLogUI.AddLog(hitMsg);
 
         int startPhase = currentPhase;
->>>>>>> Stashed changes
-        float remainingDamage = damage; // ±ğ°í ³²Àº °üÅë µ¥¹ÌÁö
+        float remainingDamage = damage; // ê¹ê³  ë‚¨ì€ ê´€í†µ ë°ë¯¸ì§€
 
         while(remainingDamage > 0 && currentPhase > 0)
         {
@@ -119,12 +115,10 @@ public class BossManager : MonoBehaviour
             else
             {
                 currentHP -= remainingDamage;
-                remainingDamage = 0; // ·çÇÁ Á¾·á
-                Debug.Log($"³²Àº HP: {currentHP} / ³²Àº ÁÙ: {currentPhase}");
+                remainingDamage = 0; // ë£¨í”„ ì¢…ë£Œ
+                Debug.Log($"ë‚¨ì€ HP: {currentHP} / ë‚¨ì€ ì¤„: {currentPhase}");
             }
         }
-<<<<<<< Updated upstream
-=======
 
         if(isEarth && !isDead)
         {
@@ -152,11 +146,11 @@ public class BossManager : MonoBehaviour
                 string lockMsg = "";
                 if (skippedGimmickCount > 1)
                 {
-                    lockMsg = $"<color=#8B4513>[´©Àû ¼®È­] {skippedGimmickCount}°³ÀÇ ±â¹Í ±¸°£ µ¹ÆÄ! {lockedReelIndex + 1}¹øÂ° ¸±ÀÌ {remainingEarthLockTurns}ÅÏ µ¿¾È ´Ü´ÜÇÏ°Ô ±»¾î¹ö¸³´Ï´Ù!</color>";
+                    lockMsg = $"<color=#8B4513>[ëˆ„ì  ì„í™”] {skippedGimmickCount}ê°œì˜ ê¸°ë¯¹ êµ¬ê°„ ëŒíŒŒ! {lockedReelIndex + 1}ë²ˆì§¸ ë¦´ì´ {remainingEarthLockTurns}í„´ ë™ì•ˆ ë‹¨ë‹¨í•˜ê²Œ êµ³ì–´ë²„ë¦½ë‹ˆë‹¤!</color>";
                 }
                 else
                 {
-                    lockMsg = $"<color=#8B4513>[¼®È­ ¹ßµ¿] ÁöÁ¤ ÆäÀÌÁî µµ´Ş! {lockedReelIndex + 1}¹øÂ° ¸±ÀÌ {remainingEarthLockTurns}ÅÏ µ¿¾È ±»¾î¹ö¸³´Ï´Ù!</color>";
+                    lockMsg = $"<color=#8B4513>[ì„í™” ë°œë™] ì§€ì • í˜ì´ì¦ˆ ë„ë‹¬! {lockedReelIndex + 1}ë²ˆì§¸ ë¦´ì´ {remainingEarthLockTurns}í„´ ë™ì•ˆ êµ³ì–´ë²„ë¦½ë‹ˆë‹¤!</color>";
                 }
 
                 Debug.Log(lockMsg);
@@ -173,11 +167,11 @@ public class BossManager : MonoBehaviour
                 if(targetPhase <= startPhase && targetPhase >= currentPhase && !triggeredSealPhases.Contains(targetPhase))
                 {
                     skippedGimmickCount++;
-                    triggeredSealPhases.Add(targetPhase); // ¹ßµ¿ Ã³¸®
+                    triggeredSealPhases.Add(targetPhase); // ë°œë™ ì²˜ë¦¬
                 }
             }
 
-            // °Ç³Ê¶Ú ±â¹Í ±¸°£ÀÌ ÇÏ³ª¶óµµ ÀÖ´Ù¸é ¹ßµ¿
+            // ê±´ë„ˆë›´ ê¸°ë¯¹ êµ¬ê°„ì´ í•˜ë‚˜ë¼ë„ ìˆë‹¤ë©´ ë°œë™
             if(skippedGimmickCount > 0)
             {
                 isShieldActive = true;
@@ -188,11 +182,11 @@ public class BossManager : MonoBehaviour
                 string sealMsg = "";
                 if (skippedGimmickCount > 1)
                 {
-                    sealMsg = $"<color=red>[´©Àû ºÀÀÎ] ´Ü¼û¿¡ {skippedGimmickCount}°³ÀÇ ±â¹Í ±¸°£À» µ¹ÆÄÇÏ¿©, º¸½º°¡ {skippedGimmickCount}ÁßÃ¸ Ã¼·Â ºÀÀÎ(¿ä±¸Ä¡: {currentBreakRequirement})À» ½ÃÀüÇÕ´Ï´Ù!</color>";
+                    sealMsg = $"<color=red>[ëˆ„ì  ë´‰ì¸] ë‹¨ìˆ¨ì— {skippedGimmickCount}ê°œì˜ ê¸°ë¯¹ êµ¬ê°„ì„ ëŒíŒŒí•˜ì—¬, ë³´ìŠ¤ê°€ {skippedGimmickCount}ì¤‘ì²© ì²´ë ¥ ë´‰ì¸(ìš”êµ¬ì¹˜: {currentBreakRequirement})ì„ ì‹œì „í•©ë‹ˆë‹¤!</color>";
                 }
                 else
                 {
-                    sealMsg = $"<color=grey>[Ã¼·Â ºÀÀÎ] ÁöÁ¤ ÆäÀÌÁî µµ´Ş! 1ÅÏ µ¿¾È Ã¼·Â ºÀÀÎ(¿ä±¸Ä¡: {currentBreakRequirement})ÀÌ Àü°³µË´Ï´Ù.</color>";
+                    sealMsg = $"<color=grey>[ì²´ë ¥ ë´‰ì¸] ì§€ì • í˜ì´ì¦ˆ ë„ë‹¬! 1í„´ ë™ì•ˆ ì²´ë ¥ ë´‰ì¸(ìš”êµ¬ì¹˜: {currentBreakRequirement})ì´ ì „ê°œë©ë‹ˆë‹¤.</color>";
                 }
 
                 Debug.Log(sealMsg);
@@ -213,19 +207,19 @@ public class BossManager : MonoBehaviour
             }
             else
             {
-                // 1ÅÏ Â÷°¨
+                // 1í„´ ì°¨ê°
                 remainingEarthLockTurns--;
 
                 if (remainingEarthLockTurns <= 0)
                 {
-                    lockedReelIndex = -1; // Àá±İ ¿ÏÀüÈ÷ ÇØÁ¦
-                    string unlockMsg = "<color=#8B4513>[¼®È­ ÇØÁ¦] ±»¾îÀÖ´ø ¸±ÀÇ ¹ÙÀ§°¡ ºÎ¼­Áö¸ç ´Ù½Ã È¸ÀüÇÒ ¼ö ÀÖ°Ô µÇ¾ú½À´Ï´Ù!</color>";
+                    lockedReelIndex = -1; // ì ê¸ˆ ì™„ì „íˆ í•´ì œ
+                    string unlockMsg = "<color=#8B4513>[ì„í™” í•´ì œ] êµ³ì–´ìˆë˜ ë¦´ì˜ ë°”ìœ„ê°€ ë¶€ì„œì§€ë©° ë‹¤ì‹œ íšŒì „í•  ìˆ˜ ìˆê²Œ ë˜ì—ˆìŠµë‹ˆë‹¤!</color>";
                     Debug.Log(unlockMsg);
                     if (battleLogUI != null) battleLogUI.AddLog(unlockMsg);
                 }
                 else
                 {
-                    string remainMsg = $"<color=grey>[¼®È­ À¯Áö] ¸± Àá±İÀÌ {remainingEarthLockTurns}ÅÏ ³²¾Ò½À´Ï´Ù.</color>";
+                    string remainMsg = $"<color=grey>[ì„í™” ìœ ì§€] ë¦´ ì ê¸ˆì´ {remainingEarthLockTurns}í„´ ë‚¨ì•˜ìŠµë‹ˆë‹¤.</color>";
                     Debug.Log(remainMsg);
                     if (battleLogUI != null) battleLogUI.AddLog(remainMsg);
                 }
@@ -238,20 +232,19 @@ public class BossManager : MonoBehaviour
             else
             {
                 isShieldActive = false;
-                string expireMsg = "<color=grey>[ºÀÀÎ ÇØÁ¦] 1ÅÏÀÌ Áö³ª Ã¼·Â ºÀÀÎÀÌ ÇØÁ¦µÇ¾ú½À´Ï´Ù.</color>";
+                string expireMsg = "<color=grey>[ë´‰ì¸ í•´ì œ] 1í„´ì´ ì§€ë‚˜ ì²´ë ¥ ë´‰ì¸ì´ í•´ì œë˜ì—ˆìŠµë‹ˆë‹¤.</color>";
                 Debug.Log(expireMsg);
                 if (battleLogUI != null) battleLogUI.AddLog(expireMsg);
 
                 healthBarUI.UpdateHealthUI(currentHP, currentBoss.maxHPPerPhase, currentPhase, isShieldActive);
             }
         }
->>>>>>> Stashed changes
     }
 
     private void TriggerPhaseGimmick(int phaseLeft)
     {
-        Debug.Log($"[ÆäÀÌÁî ÀüÈ¯] º¸½ºÀÇ Ã¼·Â ÁÙÀÌ ÆÄ±«µÇ¾ú½À´Ï´Ù! ¹æÇØ ±â¹Í ¹ßµ¿! (³²Àº ÁÙ: {phaseLeft})");
-        // TODO: ¾óÀ½, ÁøÈë µî ±â¹Í ¹ßµ¿
+        Debug.Log($"[í˜ì´ì¦ˆ ì „í™˜] ë³´ìŠ¤ì˜ ì²´ë ¥ ì¤„ì´ íŒŒê´´ë˜ì—ˆìŠµë‹ˆë‹¤! ë°©í•´ ê¸°ë¯¹ ë°œë™! (ë‚¨ì€ ì¤„: {phaseLeft})");
+        // TODO: ì–¼ìŒ, ì§„í™ ë“± ê¸°ë¯¹ ë°œë™
     }
 
     private void Die(float initialOverkill)
@@ -260,8 +253,11 @@ public class BossManager : MonoBehaviour
         currentPhase = 0;
         currentHP = 0;
         accumulatedOverkill = initialOverkill;
-        Debug.Log("[º¸½º Ã³Ä¡] º¸½º¸¦ ¼º°øÀûÀ¸·Î Åä¹úÇß½À´Ï´Ù!");
 
-        // TODO: ÇÇ³ÄÅ¸ ¸ğµå ÁøÀÔ ÀÌº¥Æ® È£Ãâ (overkillDamage Àü´Ş)
+        string dieMsg = "<color=red><b>[ë³´ìŠ¤ ì²˜ì¹˜] ë³´ìŠ¤ë¥¼ ì„±ê³µì ìœ¼ë¡œ í† ë²Œí–ˆìŠµë‹ˆë‹¤!</b></color>";
+        Debug.Log(dieMsg);
+        if (battleLogUI != null) battleLogUI.AddLog(dieMsg);
+
+        // TODO: í”¼ëƒíƒ€ ëª¨ë“œ ì§„ì… ì´ë²¤íŠ¸ í˜¸ì¶œ (overkillDamage ì „ë‹¬)
     }
 }

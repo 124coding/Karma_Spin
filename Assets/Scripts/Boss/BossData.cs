@@ -4,21 +4,18 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "BossData", menuName = "Boss/BossData")]
 public class BossData : ScriptableObject
 {
-    [Header("±âº» Á¤º¸")]
-    public string bossName; // º¸½º ÀÌ¸§
-    public float maxHPPerPhase; // ÆäÀÌÁî 1°³´ç Ã¼·Â
-    public int totalPhases = 3; // ÃÑ Ã¼·Â ÁÙ °³¼ö
+    [Header("ê¸°ë³¸ ì •ë³´")]
+    public SymbolType symbolType;
+    public string bossName; // ë³´ìŠ¤ ì´ë¦„
+    public float maxHPPerPhase; // í˜ì´ì¦ˆ 1ê°œë‹¹ ì²´ë ¥
+    public int totalPhases = 3; // ì´ ì²´ë ¥ ì¤„ ê°œìˆ˜
 
-<<<<<<< Updated upstream
-=======
     public Sprite bossSprite;
 
-    [Header("¼Ó¼º ±â¹Í ¼³Á¤")]
-    [Tooltip("±â¹ÍÀÌ ¹ßµ¿ÇÒ ÆäÀÌÁî ¸ñ·Ï")]
+    [Header("ì†ì„± ê¸°ë¯¹ ì„¤ì •")]
+    [Tooltip("ê¸°ë¯¹ì´ ë°œë™í•  í˜ì´ì¦ˆ ëª©ë¡")]
     public List<int> sealPhases = new List<int>();
-    [Tooltip("¼Ó¼ºÀÌ ±İÀÏ¶§ ºÀÀÎ ÇØÁ¦¸¦ À§ÇÑ ±âº» µ¥¹ÌÁö ¿ä±¸Ä¡")]
+    [Tooltip("ì†ì„±ì´ ê¸ˆì¼ë•Œ ë´‰ì¸ í•´ì œë¥¼ ìœ„í•œ ê¸°ë³¸ ë°ë¯¸ì§€ ìš”êµ¬ì¹˜")]
     public float metalBaseBreakRequirement = 1500f;
-
->>>>>>> Stashed changes
-    // TODO: ÃßÈÄ ÆäÀÌÁî°¡ ³Ñ¾î°¥ ¶§¸¶´Ù ¹ßµ¿ÇÒ ±â¹Í µ¥ÀÌÅÍ ¸®½ºÆ®¸¦ ¿©±â¿¡ Ãß°¡ÇÒ ¼ö ÀÖ½À´Ï´Ù.
+    // TODO: ì¶”í›„ í˜ì´ì¦ˆê°€ ë„˜ì–´ê°ˆ ë•Œë§ˆë‹¤ ë°œë™í•  ê¸°ë¯¹ ë°ì´í„° ë¦¬ìŠ¤íŠ¸ë¥¼ ì—¬ê¸°ì— ì¶”ê°€í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
 }
