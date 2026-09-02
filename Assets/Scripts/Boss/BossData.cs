@@ -1,15 +1,21 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "BossData", menuName = "Boss/BossData")]
 public class BossData : ScriptableObject
 {
-    [Header("±âº» Á¤º¸")]
+    [Header("ê¸°ë³¸ ì •ë³´")]
     public SymbolType symbolType;
-    public string bossName; // º¸½º ÀÌ¸§
-    public float maxHPPerPhase; // ÆäÀÌÁî 1°³´ç Ã¼·Â
-    public int totalPhases = 3; // ÃÑ Ã¼·Â ÁÙ °³¼ö
+    public string bossName; // ë³´ìŠ¤ ì´ë¦„
+    public float maxHPPerPhase; // í˜ì´ì¦ˆ 1ê°œë‹¹ ì²´ë ¥
+    public int totalPhases = 3; // ì´ ì²´ë ¥ ì¤„ ê°œìˆ˜
 
     public Sprite bossSprite;
 
-    // TODO: ÃßÈÄ ÆäÀÌÁî°¡ ³Ñ¾î°¥ ¶§¸¶´Ù ¹ßµ¿ÇÒ ±â¹Í µ¥ÀÌÅÍ ¸®½ºÆ®¸¦ ¿©±â¿¡ Ãß°¡ÇÒ ¼ö ÀÖ½À´Ï´Ù.
+    [Header("ì†ì„± ê¸°ë¯¹ ì„¤ì •")]
+    [Tooltip("ê¸°ë¯¹ì´ ë°œë™í•  í˜ì´ì¦ˆ ëª©ë¡")]
+    public List<int> sealPhases = new List<int>();
+    [Tooltip("ì†ì„±ì´ ê¸ˆì¼ë•Œ ë´‰ì¸ í•´ì œë¥¼ ìœ„í•œ ê¸°ë³¸ ë°ë¯¸ì§€ ìš”êµ¬ì¹˜")]
+    public float metalBaseBreakRequirement = 1500f;
+    // TODO: ì¶”í›„ í˜ì´ì¦ˆê°€ ë„˜ì–´ê°ˆ ë•Œë§ˆë‹¤ ë°œë™í•  ê¸°ë¯¹ ë°ì´í„° ë¦¬ìŠ¤íŠ¸ë¥¼ ì—¬ê¸°ì— ì¶”ê°€í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
 }

@@ -19,9 +19,9 @@ public class SlotManager : MonoBehaviour
     private int stoppedReelCount = 0;
     private SymbolData[,] currentGrid = new SymbolData[3, 3];
 
-    // TODO: °¢ ¸± °´Ã¼³ª Ä­¸¶´Ù ±â¹Í »óÅÂ(isFrozen, isBlinded)¸¦ ÁÖÀÔÇÏ°í °ü¸®ÇÏ´Â ·ÎÁ÷ Ãß°¡ ÇÊ¿ä
+    // TODO: ê° ë¦´ ê°ì²´ë‚˜ ì¹¸ë§ˆë‹¤ ê¸°ë¯¹ ìƒíƒœ(isFrozen, isBlinded)ë¥¼ ì£¼ì…í•˜ê³  ê´€ë¦¬í•˜ëŠ” ë¡œì§ ì¶”ê°€ í•„ìš”
 
-    // TODO: Test »èÁ¦ ÇÊ¿ä
+    // TODO: Test ì‚­ì œ í•„ìš”
     private void Start()
     {
         SettingReels();
@@ -29,33 +29,49 @@ public class SlotManager : MonoBehaviour
 
     public void OnClickSpinButton()
     {
-        if (isSpinning) return; // ÀÌ¹Ì µ¹°í ÀÖÀ¸¸é ¹«½Ã
+        if (isSpinning) return; // ì´ë¯¸ ëŒê³  ìˆìœ¼ë©´ ë¬´ì‹œ
         StartCoroutine(SpinSequenceRoutine());
     }
 
     private IEnumerator SpinSequenceRoutine()
     {
-        if (isSpinning) yield break; // ÀÌ¹Ì µ¹°í ÀÖÀ¸¸é Áï½Ã Ãë¼Ò
+        if (isSpinning) yield break; // ì´ë¯¸ ëŒê³  ìˆìœ¼ë©´ ì¦‰ì‹œ ì·¨ì†Œ
 
         isSpinning = true;
-        spinButton.interactable = false; // ¹öÆ° ºñÈ°¼ºÈ­ (½Ã°¢Àû Ã³¸®)
+        spinButton.interactable = false; // ë²„íŠ¼ ë¹„í™œì„±í™” (ì‹œê°ì  ì²˜ë¦¬)
 
         SpinAllReels();
-        // TODO: ¸ğµç ¸±ÀÌ ¸ØÃß°í, BattleManagerÀÇ µ¥¹ÌÁö ¿¬Ãâ ÄÚ·çÆ¾ÀÌ ³¡³¯ ¶§±îÁö ´ë±â
         yield return null;
-
-        // ¿¬Ãâ Á¾·á ÈÄ
-        isSpinning = false;
-        spinButton.interactable = true;
     }
 
     private void SpinAllReels()
     {
         stoppedReelCount = 0;
 
+        int lockedIndex = -1;
+        BossManager boss = battleManager.BossManager;
+
+        if (boss.CurrentSymbol == SymbolType.Earth && boss.remainingEarthLockTurns > 0)
+        {
+            lockedIndex = boss.lockedReelIndex;
+        }
+
         for (int i = 0; i < reels.Length; ++i)
         {
             int reelIndex = i;
+
+            if(reelIndex == lockedIndex)
+            {
+                stoppedReelCount++;
+
+                if (stoppedReelCount == 3)
+                {
+                    Debug.Log("ëª¨ë“  ë¦´ ì •ì§€ ì™„ë£Œ! ë°ë¯¸ì§€ ì •ì‚°ì„ ì‹œì‘í•©ë‹ˆë‹¤.");
+                    battleManager.OnReelStopped(currentGrid);
+                }
+
+                continue;
+            }
 
             StartCoroutine(reels[i].Spin(results =>
             {
@@ -65,10 +81,10 @@ public class SlotManager : MonoBehaviour
 
                 stoppedReelCount++;
 
-                // 3°³ÀÇ ¸±ÀÌ ¸ğµÎ ¸ØÃè´Ù¸é?
+                // 3ê°œì˜ ë¦´ì´ ëª¨ë‘ ë©ˆì·„ë‹¤ë©´?
                 if (stoppedReelCount == 3)
                 {
-                    Debug.Log("¸ğµç ¸± Á¤Áö ¿Ï·á! µ¥¹ÌÁö Á¤»êÀ» ½ÃÀÛÇÕ´Ï´Ù.");
+                    Debug.Log("ëª¨ë“  ë¦´ ì •ì§€ ì™„ë£Œ! ë°ë¯¸ì§€ ì •ì‚°ì„ ì‹œì‘í•©ë‹ˆë‹¤.");
                     battleManager.OnReelStopped(currentGrid);
                 }
             }));
@@ -86,7 +102,7 @@ public class SlotManager : MonoBehaviour
 
     private List<SymbolData> GenerateStackedReelStrip()
     {
-        // ½Éº¼µéÀ» 1 ~ 4°³ ´ÜÀ§ÀÇ µ¢¾î¸®·Î ¸¸µé¾î ÀúÀå
+        // ì‹¬ë³¼ë“¤ì„ 1 ~ 4ê°œ ë‹¨ìœ„ì˜ ë©ì–´ë¦¬ë¡œ ë§Œë“¤ì–´ ì €ì¥
         List<List<SymbolData>> chunks = new List<List<SymbolData>>();
 
         foreach (var symbol in allAvailableSymbols)
@@ -115,7 +131,7 @@ public class SlotManager : MonoBehaviour
             }
         }
 
-        // µ¢¾î¸® ´ÜÀ§·Î ¹«ÀÛÀ§ ¼ÅÇÃ
+        // ë©ì–´ë¦¬ ë‹¨ìœ„ë¡œ ë¬´ì‘ìœ„ ì…”í”Œ
         for(int i = 0; i < chunks.Count; i++)
         {
             int randomIndex = Random.Range(i, chunks.Count);
@@ -141,7 +157,7 @@ public class SlotManager : MonoBehaviour
             }
         }
 
-        // ¼¯ÀÎ µ¢¾î¸® ±æ°Ô ÀÌ¾î ºÙÀÌ±â
+        // ì„ì¸ ë©ì–´ë¦¬ ê¸¸ê²Œ ì´ì–´ ë¶™ì´ê¸°
         List<SymbolData> finalStrip = new List<SymbolData>();
         foreach (var chunk in chunks)
         {
@@ -149,5 +165,11 @@ public class SlotManager : MonoBehaviour
         }
 
         return finalStrip;
+    }
+
+    public void UnlockSpinButton()
+    {
+        isSpinning = false;
+        spinButton.interactable = true;
     }
 }

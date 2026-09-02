@@ -3,24 +3,27 @@ using UnityEngine;
 
 public class BattleManager : MonoBehaviour
 {
-    [Header("Å×½ºÆ®¿ë ·Î±×")]
+    [Header("í…ŒìŠ¤íŠ¸ìš© ë¡œê·¸")]
     [SerializeField] private BattleLogUI battleLogUI;
 
-    [Header("Å×½ºÆ®¿ë µ¥ÀÌÅÍ")]
+    [Header("í…ŒìŠ¤íŠ¸ìš© ë°ì´í„°")]
     public BossData testBossData;
+
+    [Header("ìŠ¬ë¡¯ ë§¤ë‹ˆì € ì—°ê²°")]
+    public SlotManager slotManager;
 
     [SerializeField] private BossManager bossManager;
     private SymbolType bossSymbolType;
 
-    [SerializeField] private int baseTurnLimit = 5; // ±âº» µ¥¹ÌÁö
+    [SerializeField] private int baseTurnLimit = 5; // ê¸°ë³¸ ë°ë¯¸ì§€
     private int currentTurns = 0;
 
-    [SerializeField] private float baseDamage = 100f; // ±âº» µ¥¹ÌÁö
-    [SerializeField] private float lineMultiplier = 2f;     // ºù°í 1ÁÙ´ç ¹èÀ²
-    [SerializeField] private float clusterMultiplier = 5f;  // 2x3, 3x2 Å¬·¯½ºÅÍ ¹èÀ²
-    [SerializeField] private float allMultiplier = 20f; // 3x3 ÀüÃ¼ ¹èÀ²
-    [SerializeField] private float taegeukMultiplier = 3f;    // ÅÂ±Ø ½Éº¼ ¹èÀ²
-    [SerializeField] private float badMultiplier = 0.5f;    // Èä ½Éº¼ Æä³ÎÆ¼ ¹èÀ²
+    [SerializeField] private float baseDamage = 100f; // ê¸°ë³¸ ë°ë¯¸ì§€
+    [SerializeField] private float lineMultiplier = 2f;     // ë¹™ê³  1ì¤„ë‹¹ ë°°ìœ¨
+    [SerializeField] private float clusterMultiplier = 5f;  // 2x3, 3x2 í´ëŸ¬ìŠ¤í„° ë°°ìœ¨
+    [SerializeField] private float allMultiplier = 20f; // 3x3 ì „ì²´ ë°°ìœ¨
+    [SerializeField] private float taegeukMultiplier = 3f;    // íƒœê·¹ ì‹¬ë³¼ ë°°ìœ¨
+    [SerializeField] private float badMultiplier = 0.5f;    // í‰ ì‹¬ë³¼ í˜ë„í‹° ë°°ìœ¨
 
     public int BaseTurnLimit => baseTurnLimit;
     public float BaseDamage => baseDamage;
@@ -30,9 +33,11 @@ public class BattleManager : MonoBehaviour
     public float TaegeukMultiplier => taegeukMultiplier;
     public float BadMultiplier => badMultiplier;
 
+    public BossManager BossManager => bossManager;
+
     public SymbolType BossSymbolType => bossSymbolType;
 
-    // TODO: Test »èÁ¦ ÇÊ¿ä
+    // TODO: Test ì‚­ì œ í•„ìš”
     private void Start()
     {
         SetInitialize(testBossData);
@@ -43,13 +48,13 @@ public class BattleManager : MonoBehaviour
         bossManager.Initialize(stageBossData);
         bossSymbolType = bossManager.CurrentSymbol;
 
-        // ÅÏÀº ¹èÆ² ¸Å´ÏÀú(½ºÅ×ÀÌÁö ·ê)°¡ ÀÚÃ¼ÀûÀ¸·Î °áÁ¤ + À¯¹° È¿°ú
+        // í„´ì€ ë°°í‹€ ë§¤ë‹ˆì €(ìŠ¤í…Œì´ì§€ ë£°)ê°€ ìì²´ì ìœ¼ë¡œ ê²°ì • + ìœ ë¬¼ íš¨ê³¼
         int relicTurnBonus = 0;
 
-        // TODO: ÅÏ Áõ°¡ ·ÎÁ÷ ÇÊ¿ä
+        // TODO: í„´ ì¦ê°€ ë¡œì§ í•„ìš”
         currentTurns = baseTurnLimit + relicTurnBonus;
 
-        Debug.Log($"ÀüÅõ ½ÃÀÛ! ÁÖ¾îÁö´Â ÃÑ ÅÏ ¼ö: {currentTurns}");
+        Debug.Log($"ì „íˆ¬ ì‹œì‘! ì£¼ì–´ì§€ëŠ” ì´ í„´ ìˆ˜: {currentTurns}");
     }
 
     public void OnReelStopped(SymbolData[,] grid)
@@ -62,13 +67,13 @@ public class BattleManager : MonoBehaviour
     {
         battleLogUI.ClearLog();
 
-        string startMsg = "<color=yellow>--- µ¥¹ÌÁö Á¤»ê ½ÃÀÛ ---</color>";
+        string startMsg = "<color=yellow>--- ë°ë¯¸ì§€ ì •ì‚° ì‹œì‘ ---</color>";
         Debug.Log(startMsg);
         battleLogUI.AddLog(startMsg);
 
         if (report.logs.Count == 0)
         {
-            string failMsg = "<color=gray>´çÃ· ½ÇÆĞ... ÅÏÀÌ Â÷°¨µË´Ï´Ù.</color>";
+            string failMsg = "<color=gray>ë‹¹ì²¨ ì‹¤íŒ¨... í„´ì´ ì°¨ê°ë©ë‹ˆë‹¤.</color>";
             Debug.Log(failMsg);
             battleLogUI.AddLog(failMsg);
         }
@@ -81,18 +86,18 @@ public class BattleManager : MonoBehaviour
                 if (log.elementType == SymbolType.Bad || log.elementType == SymbolType.Taegeuk)
                 {
                     string color = log.elementType == SymbolType.Taegeuk ? "yellow" : "purple";
-                    string msgType = log.elementType == SymbolType.Taegeuk ? "Ãàº¹" : "Æä³ÎÆ¼";
+                    string msgType = log.elementType == SymbolType.Taegeuk ? "ì¶•ë³µ" : "í˜ë„í‹°";
 
-                    // ±âÁ¸¿¡ ÀÛ¼ºÇß´ø ¸®Ä¡ ÅØ½ºÆ®¸¦ º¯¼ö¿¡ ´ã½À´Ï´Ù.
-                    lineMsg = $"<color={color}>[{log.elementType} {msgType} ÀèÆÌ!] <size=150%><b>x{log.multiplier}</b></size> -> ÃÑÇÕ: {log.currentElementDamage}</color>";
+                    // ê¸°ì¡´ì— ì‘ì„±í–ˆë˜ ë¦¬ì¹˜ í…ìŠ¤íŠ¸ë¥¼ ë³€ìˆ˜ì— ë‹´ìŠµë‹ˆë‹¤.
+                    lineMsg = $"<color={color}>[{log.elementType} {msgType} ì­íŒŸ!] <size=150%><b>x{log.multiplier}</b></size> -> ì´í•©: {log.currentElementDamage}</color>";
 
-                    // TODO: Èä, ÅÂ±Ø ÀèÆÌ ¿¬Ãâ ³Ö±â
+                    // TODO: í‰, íƒœê·¹ ì­íŒŸ ì—°ì¶œ ë„£ê¸°
                 }
                 else
                 {
-                    lineMsg = $"[{log.elementType} ºù°í!] <size=150%><b>x{log.multiplier}</b></size> -> [{log.elementType}] ´©Àû: <color=orange>{log.currentElementDamage}</color>";
+                    lineMsg = $"[{log.elementType} ë¹™ê³ !] <size=150%><b>x{log.multiplier}</b></size> -> [{log.elementType}] ëˆ„ì : <color=orange>{log.currentElementDamage}</color>";
 
-                    // TODO: ¿¬Ãâ ³Ö±â
+                    // TODO: ì—°ì¶œ ë„£ê¸°
                 }
 
                 Debug.Log(lineMsg);
@@ -101,7 +106,7 @@ public class BattleManager : MonoBehaviour
                 yield return new WaitForSeconds(0.5f);
             }
 
-            string finalMsg = $"<color=red><b> ¸ğµç ¼Ó¼º µ¥¹ÌÁö ÇÕ»ê! ÃÖÁ¾ Æø¹ß µ¥¹ÌÁö: {report.finalDamage}</b></color>";
+            string finalMsg = $"<color=red><b> ëª¨ë“  ì†ì„± ë°ë¯¸ì§€ í•©ì‚°! ìµœì¢… í­ë°œ ë°ë¯¸ì§€: {report.finalDamage}</b></color>";
             Debug.Log(finalMsg);
             battleLogUI.AddLog(finalMsg);
 
@@ -109,7 +114,7 @@ public class BattleManager : MonoBehaviour
         }
 
         currentTurns--;
-        string turnMsg = $"³²Àº ÅÏ ¼ö: {currentTurns}";
+        string turnMsg = $"ë‚¨ì€ í„´ ìˆ˜: {currentTurns}";
         Debug.Log(turnMsg);
         battleLogUI.AddLog(turnMsg);
 
@@ -117,27 +122,31 @@ public class BattleManager : MonoBehaviour
         {
             if (bossManager.isDead)
             {
-                string clearMsg = $"<color=yellow>½ºÅ×ÀÌÁö Å¬¸®¾î!</color>\n <color=yellow>ÃÖÁ¾ ´©Àû ¿À¹öÅ³ µ¥¹ÌÁö: {bossManager.accumulatedOverkill} -> º¸»óÀ¸·Î È¯»êÇÕ´Ï´Ù.</color>";
+                string clearMsg = $"<color=yellow>ìŠ¤í…Œì´ì§€ í´ë¦¬ì–´!</color>\n <color=yellow>ìµœì¢… ëˆ„ì  ì˜¤ë²„í‚¬ ë°ë¯¸ì§€: {bossManager.accumulatedOverkill} -> ë³´ìƒìœ¼ë¡œ í™˜ì‚°í•©ë‹ˆë‹¤.</color>";
                 Debug.Log(clearMsg);
                 battleLogUI.AddLog(clearMsg);
-                // TODO: ¿À¹öÅ³ µ¥¹ÌÁö¸¦ °ñµå³ª ÀçÈ­·Î º¯È¯ÇÏ´Â ·ÎÁ÷ È£Ãâ
+                // TODO: ì˜¤ë²„í‚¬ ë°ë¯¸ì§€ë¥¼ ê³¨ë“œë‚˜ ì¬í™”ë¡œ ë³€í™˜í•˜ëŠ” ë¡œì§ í˜¸ì¶œ
             }
             else
             {
-                string failMsg = "<color=gray>ÅÏÀ» ¸ğµÎ ¼Ò¸ğÇß½À´Ï´Ù. º¸½º Åä¹ú ½ÇÆĞ (Game Over).</color>";
+                string failMsg = "<color=gray>í„´ì„ ëª¨ë‘ ì†Œëª¨í–ˆìŠµë‹ˆë‹¤. ë³´ìŠ¤ í† ë²Œ ì‹¤íŒ¨ (Game Over).</color>";
                 Debug.Log(failMsg);
                 battleLogUI.AddLog(failMsg);
-                // TODO: °ÔÀÓ ¿À¹ö UI È£Ãâ
+                // TODO: ê²Œì„ ì˜¤ë²„ UI í˜¸ì¶œ
             }
         }
         else
         {
             if (bossManager.isDead)
             {
-                string pinataMsg = "<color=cyan>ÇÇ³ÄÅ¸ ¸ğµå ÁøÇà Áß... ´ÙÀ½ ½ºÇÉÀ» µ¹·Á ³²Àº ÅÏÀ» ¼Ò¸ğÇÏ¼¼¿ä!</color>";
+                string pinataMsg = "<color=cyan>í”¼ëƒíƒ€ ëª¨ë“œ ì§„í–‰ ì¤‘... ë‹¤ìŒ ìŠ¤í•€ì„ ëŒë ¤ ë‚¨ì€ í„´ì„ ì†Œëª¨í•˜ì„¸ìš”!</color>";
                 Debug.Log(pinataMsg);
                 battleLogUI.AddLog(pinataMsg);
             }
         }
+
+        bossManager.OnTurnEnd();
+
+        if (slotManager != null) slotManager.UnlockSpinButton();
     }
 }
