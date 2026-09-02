@@ -7,6 +7,7 @@ public class BattleManager : MonoBehaviour
     public BossData testBossData;
 
     [SerializeField] private BossManager bossManager;
+    private SymbolType bossSymbolType;
 
     [SerializeField] private int baseTurnLimit = 5; // 기본 데미지
     private int currentTurns = 0;
@@ -26,7 +27,10 @@ public class BattleManager : MonoBehaviour
     public float TaegeukMultiplier => taegeukMultiplier;
     public float BadMultiplier => badMultiplier;
 
-    public void TestInitializeButton()
+    public SymbolType BossSymbolType => bossSymbolType;
+
+    // TODO: Test 삭제 필요
+    private void Start()
     {
         SetInitialize(testBossData);
     }
@@ -34,6 +38,7 @@ public class BattleManager : MonoBehaviour
     public void SetInitialize(BossData stageBossData)
     {
         bossManager.Initialize(stageBossData);
+        bossSymbolType = bossManager.CurrentSymbol;
 
         // 턴은 배틀 매니저(스테이지 룰)가 자체적으로 결정 + 유물 효과
         int relicTurnBonus = 0;
@@ -57,24 +62,32 @@ public class BattleManager : MonoBehaviour
         if (report.logs.Count == 0)
         {
             Debug.Log("<color=gray>당첨 실패... 데미지 0</color>");
-            yield break;
         }
-
-        float currentDisplayDamage = BaseDamage;
-        Debug.Log($"기본 데미지: {currentDisplayDamage}");
-        yield return new WaitForSeconds(0.5f);
-
-        // 영수증(Logs)을 하나씩 순회하며 콘솔에 출력
-        foreach (var log in report.logs)
+        else
         {
-            currentDisplayDamage *= log.multiplier;
-            Debug.Log($"[배율 증가!] {log.multiplier}배 적용 -> 현재 데미지: <color=orange>{currentDisplayDamage}</color>");
-            yield return new WaitForSeconds(0.5f);
+            foreach(var log in report.logs)
+            {
+                if (log.elementType == SymbolType.Bad || log.elementType == SymbolType.Taegeuk)
+                {
+                    // 흉, 태극 등 '전체 데미지'에 영향을 주는 특수 잭팟
+                    string color = log.elementType == SymbolType.Taegeuk ? "yellow" : "purple";
+                    string msg = log.elementType == SymbolType.Taegeuk ? "축복" : "페널티";
+
+                    Debug.Log($"<color={color}>[{log.elementType} {msg} 잭팟!] 총 데미지 배율 x{log.multiplier} 적용 -> 현재까지의 총합 데미지: {log.currentElementDamage}</color>");
+                    // TODO: 흉, 태극 잭팟 연출 넣기
+                }
+                else
+                {
+                    // 일반 오행 속성 빙고 및 상성(약점/내성)
+                    Debug.Log($"[{log.elementType} 당첨!] 개별 배율 x{log.multiplier} 획득 -> [{log.elementType}] 속성 누적 데미지: <color=orange>{log.currentElementDamage}</color>");
+                    // TODO: 연출 넣기
+                }
+
+                yield return new WaitForSeconds(0.5f);
+            }
+
+            bossManager.TakeDamage(report.finalDamage);
         }
-
-        Debug.Log($"<color=red><b>최종 폭발 데미지: {report.finalDamage}</b></color>");
-
-        bossManager.TakeDamage(report.finalDamage);
 
         currentTurns--;
         Debug.Log($"남은 턴 수: {currentTurns}");

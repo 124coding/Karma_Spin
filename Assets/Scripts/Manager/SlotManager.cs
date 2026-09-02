@@ -1,5 +1,7 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SlotManager : MonoBehaviour
 {
@@ -9,6 +11,9 @@ public class SlotManager : MonoBehaviour
     public int minStackSize;
     public int maxStackSize;
 
+    private bool isSpinning = false;
+    public Button spinButton;
+
     public BattleManager battleManager;
 
     private int stoppedReelCount = 0;
@@ -16,7 +21,35 @@ public class SlotManager : MonoBehaviour
 
     // TODO: 각 릴 객체나 칸마다 기믹 상태(isFrozen, isBlinded)를 주입하고 관리하는 로직 추가 필요
 
-    public void SpinAllReels()
+    // TODO: Test 삭제 필요
+    private void Start()
+    {
+        SettingReels();
+    }
+
+    public void OnClickSpinButton()
+    {
+        if (isSpinning) return; // 이미 돌고 있으면 무시
+        StartCoroutine(SpinSequenceRoutine());
+    }
+
+    private IEnumerator SpinSequenceRoutine()
+    {
+        if (isSpinning) yield break; // 이미 돌고 있으면 즉시 취소
+
+        isSpinning = true;
+        spinButton.interactable = false; // 버튼 비활성화 (시각적 처리)
+
+        SpinAllReels();
+        // TODO: 모든 릴이 멈추고, BattleManager의 데미지 연출 코루틴이 끝날 때까지 대기
+        yield return null;
+
+        // 연출 종료 후
+        isSpinning = false;
+        spinButton.interactable = true;
+    }
+
+    private void SpinAllReels()
     {
         stoppedReelCount = 0;
 

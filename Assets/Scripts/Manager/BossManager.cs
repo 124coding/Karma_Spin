@@ -5,6 +5,12 @@ public class BossManager : MonoBehaviour
     private BossData currentBoss;
     private float currentHP;
     private int currentPhase; // 현재 남은 체력 줄 개수
+    private SymbolType currentSymbol;
+
+    [Header("UI 연결")]
+    public BossHealthBar healthBarUI;
+
+    public SymbolType CurrentSymbol => currentSymbol;
 
     // 피냐타 모드 관련 변수
     public bool isDead { get; private set; } = false;
@@ -17,6 +23,9 @@ public class BossManager : MonoBehaviour
         currentHP = currentBoss.maxHPPerPhase;
         isDead = false;
         accumulatedOverkill = 0f;
+        currentSymbol = currentBoss.symbolType;
+
+        healthBarUI.UpdateHealthUI(currentHP, currentBoss.maxHPPerPhase, currentPhase);
 
         Debug.Log($"[{currentBoss.bossName}] 출현! (HP: {currentHP} x {currentPhase}줄)");
     }
@@ -57,6 +66,8 @@ public class BossManager : MonoBehaviour
                 Debug.Log($"남은 HP: {currentHP} / 남은 줄: {currentPhase}");
             }
         }
+
+        healthBarUI.UpdateHealthUI(currentHP, currentBoss.maxHPPerPhase, currentPhase);
     }
 
     private void TriggerPhaseGimmick(int phaseLeft)
