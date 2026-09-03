@@ -44,5 +44,15 @@ public class BossEarthGimmick : IBossGimmick
         }
     }
 
-    public bool IsSlotBlocked(Vector2Int pos, SymbolType targetType) => false;
+    public bool? EvaluateCustomValidity(Vector2Int pos, SymbolType targetType, SymbolData s)
+    {
+        return null;
+    }
+
+    public void ClearGimmick()
+    {
+        remainingEarthLockTurns = 0;
+        lockedReelIndex = -1;
+        isEarthLockJustActivated = false;
+    }
 }

@@ -15,5 +15,7 @@ public interface IBossGimmick
     void OnTurnEnd();
 
     // Æ¯Á¤ ÁÂÇ¥ ¿À¿° È®ÀÎ
-    bool IsSlotBlocked(Vector2Int pos, SymbolType targetType);
+    bool? EvaluateCustomValidity(Vector2Int pos, SymbolType targetType, SymbolData s);
+
+    void ClearGimmick();
 }

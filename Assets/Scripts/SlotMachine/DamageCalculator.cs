@@ -19,6 +19,10 @@ public class DamageReport
     public bool[,] isUsedGrid = new bool[3, 3];      // 활성화된 심볼 위치
     public bool hasWaterJackpot = false; // 수(Water) 속성 잭팟 여부
     public List<Vector2Int> meltedIceCoords = new List<Vector2Int>(); // 이번 계산으로 녹일 얼음 칸들
+
+    // 태극 흉 잭팟 여부
+    public bool isTaegeukJackpot = false;
+    public bool isBadJackpot = false;
 }
 
 public static class DamageCalculator
@@ -123,8 +127,32 @@ public static class DamageCalculator
 
         if (hasTaegeukJackpot)
         {
+            report.isTaegeukJackpot = true;
             report.hasWaterJackpot = true;
-            // TODO: 태극 잭팟 관련 기획 필요
+            
+            if(report.logs.Count == 0)
+            {
+                // 다른 잭팟이 없을 때
+                float taegeukDamage = battleManager.BaseDamage * 77f;
+                totalFinalDamage = taegeukDamage;
+
+                report.logs.Add(new DamageLog
+                {
+                    elementType = battleManager.BossSymbolType,
+                    multiplier = 77f,
+                    currentElementDamage = taegeukDamage
+                });
+            }
+            else
+            {
+                totalFinalDamage *= 77f;
+                report.logs.Add(new DamageLog
+                {
+                    elementType = SymbolType.Taegeuk,
+                    multiplier = 77f,
+                    currentElementDamage = totalFinalDamage
+                });
+            }
         }
 
         // 흉 잭팟 독립 판정
@@ -139,7 +167,15 @@ public static class DamageCalculator
 
         if (hasBadJackpot)
         {
-            // TODO: 흉 잭팟 관련 기획 필요
+            report.isBadJackpot = true;
+            totalFinalDamage = 0f;
+
+            report.logs.Add(new DamageLog
+            {
+                elementType = SymbolType.Bad,
+                multiplier = 0f,
+                currentElementDamage = 0f
+            });
         }
 
         // 최종 데미지 저장 후 영수증 반환
@@ -153,38 +189,11 @@ public static class DamageCalculator
     {
         Vector2Int pos = new Vector2Int(x, y);
 
-        if (battleManager.BossManager.IsSlotBlocked(pos, targetType))
+        bool? customValidity = battleManager.BossManager.EvaluateCustomValidity(pos, targetType, s);
+        if (customValidity.HasValue)
         {
-            if (targetType == SymbolType.Bad) return true;
-            return false;
+            return customValidity.Value;
         }
-
-        //// 목에 잠식되어 있는 칸
-        //if (battleManager.BossManager.corruptedSlots.Contains(new Vector2Int(x, y)))
-        //{
-        //    if (targetType == SymbolType.Bad) return true;
-        //    return false;
-        //}
-
-        //// 현재 검사 중인 칸이 얼었는지 확인
-        //bool isFrozen = battleManager.BossManager.frozenSlots.Contains(new Vector2Int(x, y));
-
-        //if (isFrozen)
-        //{
-        //    // 타겟 속성이 불일때만
-        //    if(targetType == SymbolType.Fire)
-        //    {
-        //        return s.type == SymbolType.Fire || s.type == SymbolType.Taegeuk;
-        //    }
-
-        //    // 불 빙고 검사가 아니라면 흉 취급
-        //    if(targetType == SymbolType.Bad)
-        //    {
-        //        return true;
-        //    }
-
-        //    return false;
-        //}
 
         if (targetType == SymbolType.Bad)
         {

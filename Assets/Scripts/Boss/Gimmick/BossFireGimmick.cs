@@ -88,12 +88,19 @@ public class BossFireGimmick : IBossGimmick
         }
     }
 
-    public bool IsSlotBlocked(Vector2Int pos, SymbolType targetType)
+    public bool? EvaluateCustomValidity(Vector2Int pos, SymbolType targetType, SymbolData s)
     {
         if (fireSlots.Contains(pos))
         {
-            return targetType != SymbolType.Bad;
+            if (targetType == SymbolType.Bad) return true;
+            return false;
         }
-        return false;
+        return null;
+    }
+
+    public void ClearGimmick()
+    {
+        fireSlots.Clear();
+        pendingFireStacks = 0;
     }
 }
