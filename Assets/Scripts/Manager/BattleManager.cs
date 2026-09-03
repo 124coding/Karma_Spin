@@ -12,6 +12,9 @@ public class BattleManager : MonoBehaviour
     [Header("슬롯 매니저 연결")]
     public SlotManager slotManager;
 
+    [Header("기믹용 데이터")]
+    public SymbolData badSymbol;
+
     [SerializeField] private BossManager bossManager;
     private SymbolType bossSymbolType;
 
@@ -59,8 +62,42 @@ public class BattleManager : MonoBehaviour
 
     public void OnReelStopped(SymbolData[,] grid)
     {
-        DamageReport report = DamageCalculator.CalculateTotalDamage(grid, this);
-        StartCoroutine(LogDamageRoutine(report));
+        if(bossManager.CurrentSymbol == SymbolType.Wood && bossManager.corruptedSlots.Count > 0)
+        {
+            for (int i = bossManager.corruptedSlots.Count - 1; i >= 0; --i){
+                Vector2Int pos = bossManager.corruptedSlots[i];
+                SymbolData landedSymbol = grid[pos.x, pos.y];
+
+                // 화, 토, 태극이라면 정화
+                if(landedSymbol.type == SymbolType.Fire || landedSymbol.type == SymbolType.Earth || landedSymbol.type == SymbolType.Taegeuk)
+                {
+                    bossManager.PurifyWood(pos);
+                }
+                else if(landedSymbol.type == SymbolType.Water)
+                {
+                    string waterMsg = $"<color=blue>덩굴이 물을 머금고 성장</color>";
+                    Debug.Log(waterMsg);
+                    if (battleLogUI != null) battleLogUI.AddLog(waterMsg);
+
+                    bossManager.SpreadWood();
+                }
+            }
+        }
+
+        bossManager.activeGimmick?.OnReelStopped(grid, this);
+
+        // 최종 데미지 계산 및 정산 시작
+        DamageReport finalReport = DamageCalculator.CalculateTotalDamage(grid, this);
+
+        //if (finalReport.meltedIceCoords.Count > 0)
+        //{
+        //    foreach (Vector2Int icePos in finalReport.meltedIceCoords)
+        //    {
+        //        bossManager.MeltIce(icePos);
+        //    }
+        //}
+
+        StartCoroutine(LogDamageRoutine(finalReport));
     }
 
     private IEnumerator LogDamageRoutine(DamageReport report)
