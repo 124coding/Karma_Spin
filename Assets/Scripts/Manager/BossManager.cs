@@ -12,6 +12,8 @@ public class BossManager : MonoBehaviour
     public BossHealthBar healthBarUI;
     public BattleLogUI battleLogUI;
 
+    public List<Vector2Int> frozenSlots = new List<Vector2Int>();
+
     public int remainingEarthLockTurns { get; private set; } = 0; // 남은 잠금 턴 수
     public int lockedReelIndex { get; private set; } = -1;       // 현재 잠긴 릴의 번호 (0, 1, 2)
     private bool isEarthLockJustActivated = false;
@@ -65,6 +67,7 @@ public class BossManager : MonoBehaviour
             return;
         }
 
+        bool isWater = (currentSymbol == SymbolType.Water);
         bool isMetal = (currentSymbol == SymbolType.Metal);
         bool isEarth = (currentSymbol == SymbolType.Earth);
 
@@ -120,6 +123,56 @@ public class BossManager : MonoBehaviour
             }
         }
 
+        // 수 보스 기믹
+        if(isWater && !isDead)
+        {
+            int skippedGimmickCount = 0;
+
+            foreach(int targetPhase in currentBoss.sealPhases)
+            {
+                if(targetPhase <= startPhase && targetPhase >= currentPhase && !triggeredSealPhases.Contains(targetPhase))
+                {
+                    skippedGimmickCount++;
+                    triggeredSealPhases.Add(targetPhase);
+                }
+            }
+
+            if(skippedGimmickCount > 0)
+            {
+                // 중복 방지
+                List<Vector2Int> availableSlots = new List<Vector2Int>();
+
+                for(int x = 0; x < 3; ++x)
+                {
+                    for(int y = 0; y < 3; ++y)
+                    {
+                        Vector2Int pos = new Vector2Int(x, y);
+                        if (!frozenSlots.Contains(pos))
+                        {
+                            availableSlots.Add(pos);
+                        }
+                    }
+                }
+
+                for(int i = 0; i< skippedGimmickCount; ++i)
+                {
+                    if (availableSlots.Count == 0) break;
+
+                    int randomIndex = Random.Range(0, availableSlots.Count);
+
+                    Vector2Int chosenSlot = availableSlots[randomIndex];
+                    frozenSlots[randomIndex] = chosenSlot;
+
+                    availableSlots.RemoveAt(randomIndex);
+
+                    string freezeMsg = $"<color=cyan>[빙결 발동] ({chosenSlot.x}, {chosenSlot.y}) 칸이 얼어붙었습니다!</color>";
+                    Debug.Log(freezeMsg);
+                    if (battleLogUI != null) battleLogUI.AddLog(freezeMsg);
+                }
+            }
+        }
+
+        // 토 보스 기믹
         if(isEarth && !isDead)
         {
             int skippedGimmickCount = 0;
@@ -158,6 +211,7 @@ public class BossManager : MonoBehaviour
             }
         }
 
+        // 금 보스 기믹
         if(isMetal && !isDead)
         {
             int skippedGimmickCount = 0;
