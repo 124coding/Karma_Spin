@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 
 public class BossHealthBar : MonoBehaviour
 {
@@ -13,49 +14,75 @@ public class BossHealthBar : MonoBehaviour
     public Color[] phaseColors;
     public Color shieldColor = new Color(0.7f, 0.7f, 0.7f);
 
+    [Header("애니메이션 설정")]
+    public float animationDuration = 0.25f; // 체력바가 깎이는 시간 (0.25초)
+    private Coroutine healthAnimCoroutine;  // 현재 실행 중인 코루틴 추적
+
+    private int visualPhase = -1;
+
     // BossManager에서 데미지를 입을 때마다 해당 함수 호출
     public void UpdateHealthUI(float currentHP, float maxHP, int currentPhase, bool isShielded = false)
     {
+        if (currentPhase <= 0)
+        {
+            if (healthAnimCoroutine != null) StopCoroutine(healthAnimCoroutine); // 실행 중인 애니메이션 즉시 정지
+
+            currentBar.color = Color.gray;
+            nextBar.color = Color.black;
+            currentBar.fillAmount = 1f;
+            phaseText.text = "피냐타 모드!";
+
+            return;
+        }
+
         // 현재 체력바 깍기
-        currentBar.fillAmount = currentHP / maxHP;
-        
+        float targetFillAmount = currentHP / maxHP;
+
+        if (visualPhase != -1 && currentPhase < visualPhase)
+        {
+            currentBar.fillAmount = 1f;
+        }
+
+        visualPhase = currentPhase;
+
         // 남은 줄 수 텍스트 갱신
         phaseText.text = $"x{currentPhase}";
 
         // 색상 업데이트
-        if(currentPhase > 0)
+        if (isShielded)
         {
-            if (isShielded)
-            {
-                // 쉴드가 켜져 있다면 금속/회색으로 덮어씌우고 텍스트 추가
-                currentBar.color = shieldColor;
-                nextBar.color = shieldColor;
-                phaseText.text = $"x{currentPhase} <size=70%><color=#CCCCCC>(봉인됨)</color></size>";
-            }
-            else
-            {
-                if(currentPhase == 1)
-                {
-                    // 평소에는 정상적인 페이즈 색상 적용
-                    currentBar.color = GetColor(currentPhase);
-                    nextBar.color = new Color(0f, 0f, 0f);
-                }
-                else
-                {
-                    currentBar.color = GetColor(currentPhase);
-                    nextBar.color = GetColor(currentPhase - 1);
-                }
-
-                phaseText.text = $"x{currentPhase}";
-            }
+            currentBar.color = shieldColor;
+            phaseText.text = $"x{currentPhase} <size=70%><color=#CCCCCC>(봉인됨)</color></size>";
         }
         else
         {
-            // 피냐타 모드(0줄) 진입 시의 처리
-            currentBar.color = Color.gray; // 샌드백 색상
-            nextBar.color = Color.white; // 배경색
-            phaseText.text = "Dead";
+            currentBar.color = GetColor(currentPhase);
+            phaseText.text = $"x{currentPhase}";
         }
+        nextBar.color = GetColor(currentPhase - 1);
+
+        // 체력바 깎기 애니메이션 (Lerp)
+        if (healthAnimCoroutine != null)
+        {
+            StopCoroutine(healthAnimCoroutine);
+        }
+
+        healthAnimCoroutine = StartCoroutine(AnimateHealthBar(targetFillAmount));
+    }
+
+    private IEnumerator AnimateHealthBar(float targetFill)
+    {
+        float startFill = currentBar.fillAmount;
+        float elapsed = 0f;
+
+        while (elapsed < animationDuration)
+        {
+            elapsed += Time.deltaTime;
+            currentBar.fillAmount = Mathf.Lerp(startFill, targetFill, elapsed / animationDuration);
+            yield return null;
+        }
+
+        currentBar.fillAmount = targetFill;
     }
 
     private Color GetColor(int phase)

@@ -131,6 +131,13 @@ public class BossManager : MonoBehaviour
                 activeGimmick?.OnPhaseSkipped(skippedGimmickCount);
             }
         }
+
+        bool isShieldOn = (activeGimmick is BossMetalGimmick metal) && metal.isShieldActive;
+
+        if (healthBarUI != null)
+        {
+            healthBarUI.UpdateHealthUI(currentHP, currentBoss.maxHPPerPhase, currentPhase, isShieldOn);
+        }
     }
 
     public int GetLockedReelIndex()
