@@ -51,9 +51,9 @@ public class SlotManager : MonoBehaviour
         int lockedIndex = -1;
         BossManager boss = battleManager.BossManager;
 
-        if (boss.CurrentSymbol == SymbolType.Earth && boss.remainingEarthLockTurns > 0)
+        if (boss.CurrentSymbol == SymbolType.Earth && boss.IsEarthLocked())
         {
-            lockedIndex = boss.lockedReelIndex;
+            lockedIndex = boss.GetLockedReelIndex();
         }
 
         for (int i = 0; i < reels.Length; ++i)

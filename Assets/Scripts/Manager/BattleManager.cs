@@ -12,6 +12,9 @@ public class BattleManager : MonoBehaviour
     [Header("슬롯 매니저 연결")]
     public SlotManager slotManager;
 
+    [Header("기믹용 데이터")]
+    public SymbolData badSymbol;
+
     [SerializeField] private BossManager bossManager;
     private SymbolType bossSymbolType;
 
@@ -59,8 +62,24 @@ public class BattleManager : MonoBehaviour
 
     public void OnReelStopped(SymbolData[,] grid)
     {
-        DamageReport report = DamageCalculator.CalculateTotalDamage(grid, this);
-        StartCoroutine(LogDamageRoutine(report));
+        bossManager.activeGimmick?.OnReelStopped(grid, this);
+
+        // 최종 데미지 계산 및 정산 시작
+        DamageReport finalReport = DamageCalculator.CalculateTotalDamage(grid, this);
+
+        if (finalReport.isTaegeukJackpot)
+        {
+            bossManager.ClearAllGimmicks();
+        }
+        else if (finalReport.meltedIceCoords.Count > 0)
+        {
+            foreach (Vector2Int icePos in finalReport.meltedIceCoords)
+            {
+                bossManager.MeltIce(icePos);
+            }
+        }
+
+        StartCoroutine(LogDamageRoutine(finalReport));
     }
 
     private IEnumerator LogDamageRoutine(DamageReport report)
