@@ -19,7 +19,9 @@ public class SlotManager : MonoBehaviour
     private int stoppedReelCount = 0;
     private SymbolData[,] currentGrid = new SymbolData[3, 3];
 
-    // TODO: 각 릴 객체나 칸마다 기믹 상태(isFrozen, isBlinded)를 주입하고 관리하는 로직 추가 필요
+    [Header("클론 하이라이트 연출")]
+    public SymbolHighlight highlightClonePrefab; // 방금 만든 클론 프리팹
+    public Transform[] slotAnchors = new Transform[9];
 
     // TODO: Test 삭제 필요
     private void Start()
@@ -165,6 +167,17 @@ public class SlotManager : MonoBehaviour
         }
 
         return finalStrip;
+    }
+
+    public void PlaySymbolHighlight(Vector2Int pos, Sprite symbolSprite)
+    {
+        int index = pos.x * 3 + pos.y;
+
+        if(index >= 0 && index < slotAnchors.Length && slotAnchors[index] != null)
+        {
+            SymbolHighlight clone = Instantiate(highlightClonePrefab, slotAnchors[index]);
+            clone.Setup(symbolSprite);
+        }
     }
 
     public void UnlockSpinButton()

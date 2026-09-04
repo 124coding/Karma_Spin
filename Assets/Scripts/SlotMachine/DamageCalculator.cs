@@ -9,6 +9,8 @@ public class DamageLog
     // public string message;         // "가로 빙고!", "약점 공략!
     public float multiplier;       // 화면에 "x2 빡!" 띄울 배율
     public float currentElementDamage; // '이 속성'이 지금까지 누적한 데미지 (합치기 전)
+
+    public List<Vector2Int> hitPositions = new List<Vector2Int>();
 }
 
 // 턴마다 BattleManager에게 넘겨줄 최종 영수증
@@ -52,7 +54,7 @@ public static class DamageCalculator
             bool hasMatch = false;
             int tCount = 0;
 
-            void ApplyMatch(float multiplier, int taegeukCount)
+            void ApplyMatch(float multiplier, int taegeukCount, List<Vector2Int> hitPositions)
             {
                 float finalMatchMultiplier = multiplier;
 
@@ -69,23 +71,56 @@ public static class DamageCalculator
                 {
                     elementType = symbolData.type,
                     multiplier = finalMatchMultiplier,
-                    currentElementDamage = battleManager.BaseDamage * elementMultiplier
+                    currentElementDamage = battleManager.BaseDamage * elementMultiplier,
+                    hitPositions = hitPositions
                 });
             }
 
             for (int y = 0; y < 3; y++)
-                if (CheckLine(symbolData.type, grid, 0, y, 1, y, 2, y, report, battleManager, out tCount)) ApplyMatch(battleManager.LineMultiplier, tCount);
+                if (CheckLine(symbolData.type, grid, 0, y, 1, y, 2, y, report, battleManager, out tCount)) ApplyMatch(battleManager.LineMultiplier, tCount, new List<Vector2Int> { new Vector2Int(0, y), new Vector2Int(1, y), new Vector2Int(2, y) });
             for (int x = 0; x < 3; x++)
-                if (CheckLine(symbolData.type, grid, x, 0, x, 1, x, 2, report, battleManager, out tCount)) ApplyMatch(battleManager.LineMultiplier, tCount);
+                if (CheckLine(symbolData.type, grid, x, 0, x, 1, x, 2, report, battleManager, out tCount)) ApplyMatch(battleManager.LineMultiplier, tCount, new List<Vector2Int> { new Vector2Int(x, 0), new Vector2Int(x, 1), new Vector2Int(x, 2) });
 
-            if (CheckLine(symbolData.type, grid, 0, 0, 1, 1, 2, 2, report, battleManager, out tCount)) ApplyMatch(battleManager.LineMultiplier, tCount);
-            if (CheckLine(symbolData.type, grid, 0, 2, 1, 1, 2, 0, report, battleManager, out tCount)) ApplyMatch(battleManager.LineMultiplier, tCount);
+            if (CheckLine(symbolData.type, grid, 0, 0, 1, 1, 2, 2, report, battleManager, out tCount)) ApplyMatch(battleManager.LineMultiplier, tCount, new List<Vector2Int> { new Vector2Int(0, 0), new Vector2Int(1, 1), new Vector2Int(2, 2) });
+            if (CheckLine(symbolData.type, grid, 0, 2, 1, 1, 2, 0, report, battleManager, out tCount)) ApplyMatch(battleManager.LineMultiplier, tCount, new List<Vector2Int> { new Vector2Int(0, 2), new Vector2Int(1, 1), new Vector2Int(2, 0) });
 
-            if (CheckArea(symbolData.type, grid, 0, 0, 3, 3, report, battleManager, out tCount)) ApplyMatch(battleManager.AllMultiplier, tCount);
-            if (CheckArea(symbolData.type, grid, 0, 0, 2, 3, report, battleManager, out tCount)) ApplyMatch(battleManager.ClusterMultiplier, tCount);
-            if (CheckArea(symbolData.type, grid, 1, 0, 2, 3, report, battleManager, out tCount)) ApplyMatch(battleManager.ClusterMultiplier, tCount);
-            if (CheckArea(symbolData.type, grid, 0, 0, 3, 2, report, battleManager, out tCount)) ApplyMatch(battleManager.ClusterMultiplier, tCount);
-            if (CheckArea(symbolData.type, grid, 0, 1, 3, 2, report, battleManager, out tCount)) ApplyMatch(battleManager.ClusterMultiplier, tCount);
+            // 1. 3x3 전체 메가 잭팟
+            if (CheckArea(symbolData.type, grid, 0, 0, 3, 3, report, battleManager, out tCount))
+                        ApplyMatch(battleManager.AllMultiplier, tCount, new List<Vector2Int> {
+                new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(2, 0),
+                new Vector2Int(0, 1), new Vector2Int(1, 1), new Vector2Int(2, 1),
+                new Vector2Int(0, 2), new Vector2Int(1, 2), new Vector2Int(2, 2)
+            });
+
+                    // 2. 2x3 클러스터 (좌측 2열)
+                    if (CheckArea(symbolData.type, grid, 0, 0, 2, 3, report, battleManager, out tCount))
+                        ApplyMatch(battleManager.ClusterMultiplier, tCount, new List<Vector2Int> {
+                new Vector2Int(0, 0), new Vector2Int(1, 0),
+                new Vector2Int(0, 1), new Vector2Int(1, 1),
+                new Vector2Int(0, 2), new Vector2Int(1, 2)
+            });
+
+                    // 3. 2x3 클러스터 (우측 2열)
+                    if (CheckArea(symbolData.type, grid, 1, 0, 2, 3, report, battleManager, out tCount))
+                        ApplyMatch(battleManager.ClusterMultiplier, tCount, new List<Vector2Int> {
+                new Vector2Int(1, 0), new Vector2Int(2, 0),
+                new Vector2Int(1, 1), new Vector2Int(2, 1),
+                new Vector2Int(1, 2), new Vector2Int(2, 2)
+            });
+
+                    // 4. 3x2 클러스터 (상단 2행)
+                    if (CheckArea(symbolData.type, grid, 0, 0, 3, 2, report, battleManager, out tCount))
+                        ApplyMatch(battleManager.ClusterMultiplier, tCount, new List<Vector2Int> {
+                new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(2, 0),
+                new Vector2Int(0, 1), new Vector2Int(1, 1), new Vector2Int(2, 1)
+            });
+
+                    // 5. 3x2 클러스터 (하단 2행)
+                    if (CheckArea(symbolData.type, grid, 0, 1, 3, 2, report, battleManager, out tCount))
+                        ApplyMatch(battleManager.ClusterMultiplier, tCount, new List<Vector2Int> {
+                new Vector2Int(0, 1), new Vector2Int(1, 1), new Vector2Int(2, 1),
+                new Vector2Int(0, 2), new Vector2Int(1, 2), new Vector2Int(2, 2)
+            });
 
             // 라인이나 덩어리가 하나라도 완성되었다면 기본 데미지에 곱해서 합산
             if (hasMatch)

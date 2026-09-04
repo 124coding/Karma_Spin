@@ -15,7 +15,15 @@ public class BattleManager : MonoBehaviour
     [Header("기믹용 데이터")]
     public SymbolData badSymbol;
 
+    [Header("팝업 연출 UI")]
+    public MultiplierPopup popupPrefab; // 앞서 만든 DamagePopup.cs가 붙은 프리팹
+    public Transform popupAnchor;
+
+    [Header("결과창 UI")]
+    public BattleResultUI resultUI;
+
     [SerializeField] private BossManager bossManager;
+    [SerializeField] private RewardManager rewardManager;
     private SymbolType bossSymbolType;
 
     [SerializeField] private int baseTurnLimit = 5; // 기본 데미지
@@ -79,10 +87,10 @@ public class BattleManager : MonoBehaviour
             }
         }
 
-        StartCoroutine(LogDamageRoutine(finalReport));
+        StartCoroutine(LogDamageRoutine(finalReport, grid));
     }
 
-    private IEnumerator LogDamageRoutine(DamageReport report)
+    private IEnumerator LogDamageRoutine(DamageReport report, SymbolData[,] grid)
     {
         battleLogUI.ClearLog();
 
@@ -101,6 +109,8 @@ public class BattleManager : MonoBehaviour
             foreach(var log in report.logs)
             {
                 string lineMsg = "";
+                Color popupColor = Color.white; // 팝업 텍스트 색상
+                string popupTextMsg = $"x{log.multiplier}!";
 
                 if (log.elementType == SymbolType.Bad || log.elementType == SymbolType.Taegeuk)
                 {
@@ -110,17 +120,29 @@ public class BattleManager : MonoBehaviour
                     // 기존에 작성했던 리치 텍스트를 변수에 담습니다.
                     lineMsg = $"<color={color}>[{log.elementType} {msgType} 잭팟!] <size=150%><b>x{log.multiplier}</b></size> -> 총합: {log.currentElementDamage}</color>";
 
-                    // TODO: 흉, 태극 잭팟 연출 넣기
+                    popupColor = log.elementType == SymbolType.Taegeuk ? Color.yellow : new Color(0.7f, 0f, 1f);
                 }
                 else
                 {
                     lineMsg = $"[{log.elementType} 빙고!] <size=150%><b>x{log.multiplier}</b></size> -> [{log.elementType}] 누적: <color=orange>{log.currentElementDamage}</color>";
 
-                    // TODO: 연출 넣기
+                    // 필요 시 속성별로 색상 분기
+                    popupColor = Color.white;
                 }
 
                 Debug.Log(lineMsg);
                 battleLogUI.AddLog(lineMsg);
+
+                if(slotManager != null && log.hitPositions != null)
+                {
+                    foreach(Vector2Int pos in log.hitPositions)
+                    {
+                        Sprite winningSprite = grid[pos.x, pos.y].symbolSprite;
+                        slotManager.PlaySymbolHighlight(pos, winningSprite);
+                    }
+                }
+
+                ShowDamagePopup(popupTextMsg, popupColor);
 
                 yield return new WaitForSeconds(0.5f);
             }
@@ -144,6 +166,13 @@ public class BattleManager : MonoBehaviour
                 string clearMsg = $"<color=yellow>스테이지 클리어!</color>\n <color=yellow>최종 누적 오버킬 데미지: {bossManager.accumulatedOverkill} -> 보상으로 환산합니다.</color>";
                 Debug.Log(clearMsg);
                 battleLogUI.AddLog(clearMsg);
+
+                RewardInfo rewardInfo = rewardManager.ProcessEndBattleRewards();
+
+                if (resultUI != null)
+                {
+                    resultUI.ShowClear(bossManager.accumulatedOverkill, rewardInfo.artifactsObtained, rewardInfo.extraGoldFromArtifactLimit);
+                }
                 // TODO: 오버킬 데미지를 골드나 재화로 변환하는 로직 호출
             }
             else
@@ -151,7 +180,8 @@ public class BattleManager : MonoBehaviour
                 string failMsg = "<color=gray>턴을 모두 소모했습니다. 보스 토벌 실패 (Game Over).</color>";
                 Debug.Log(failMsg);
                 battleLogUI.AddLog(failMsg);
-                // TODO: 게임 오버 UI 호출
+
+                if (resultUI != null) resultUI.ShowGameOver();
             }
         }
         else
@@ -167,5 +197,14 @@ public class BattleManager : MonoBehaviour
         bossManager.OnTurnEnd();
 
         if (slotManager != null) slotManager.UnlockSpinButton();
+    }
+
+    private void ShowDamagePopup(string text, Color color)
+    {
+        if(popupPrefab != null && popupAnchor != null)
+        {
+            MultiplierPopup popup = Instantiate(popupPrefab, popupAnchor);
+            popup.Setup(text, color);
+        }
     }
 }
