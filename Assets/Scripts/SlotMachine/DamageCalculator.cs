@@ -150,24 +150,32 @@ public static class DamageCalculator
 
         // 태극 독립 잭팟 판정
         bool hasTaegeukJackpot = false;
+        List<Vector2Int> taegeukHitPositions = new List<Vector2Int>(); // 추가된 리스트
 
-        // 가로, 세로, 대각선 라인 검사
-        for (int y = 0; y < 3; y++) if (CheckLine(SymbolType.Taegeuk, grid, 0, y, 1, y, 2, y, report, battleManager, out dummyCount)) hasTaegeukJackpot = true;
-        for (int x = 0; x < 3; x++) if (CheckLine(SymbolType.Taegeuk, grid, x, 0, x, 1, x, 2, report, battleManager, out dummyCount)) hasTaegeukJackpot = true;
-        if (CheckLine(SymbolType.Taegeuk, grid, 0, 0, 1, 1, 2, 2, report, battleManager, out dummyCount)) hasTaegeukJackpot = true;
-        if (CheckLine(SymbolType.Taegeuk, grid, 0, 2, 1, 1, 2, 0, report, battleManager, out dummyCount)) hasTaegeukJackpot = true;
+        void CheckAndAddTaegeuk(bool success, params Vector2Int[] positions)
+        {
+            if (success) { hasTaegeukJackpot = true; taegeukHitPositions.AddRange(positions); }
+        }
 
-        // (클러스터 잭팟도 인정한다면 CheckArea 추가)
-        if (CheckArea(SymbolType.Taegeuk, grid, 0, 0, 3, 3, report, battleManager, out dummyCount)) hasTaegeukJackpot = true;
+        // 가로 라인
+        for (int y = 0; y < 3; y++) CheckAndAddTaegeuk(CheckLine(SymbolType.Taegeuk, grid, 0, y, 1, y, 2, y, report, battleManager, out dummyCount), new Vector2Int(0, y), new Vector2Int(1, y), new Vector2Int(2, y));
+        // 세로 라인
+        for (int x = 0; x < 3; x++) CheckAndAddTaegeuk(CheckLine(SymbolType.Taegeuk, grid, x, 0, x, 1, x, 2, report, battleManager, out dummyCount), new Vector2Int(x, 0), new Vector2Int(x, 1), new Vector2Int(x, 2));
+        // 대각선
+        CheckAndAddTaegeuk(CheckLine(SymbolType.Taegeuk, grid, 0, 0, 1, 1, 2, 2, report, battleManager, out dummyCount), new Vector2Int(0, 0), new Vector2Int(1, 1), new Vector2Int(2, 2));
+        CheckAndAddTaegeuk(CheckLine(SymbolType.Taegeuk, grid, 0, 2, 1, 1, 2, 0, report, battleManager, out dummyCount), new Vector2Int(0, 2), new Vector2Int(1, 1), new Vector2Int(2, 0));
+
+        // 3x3 에리어
+        CheckAndAddTaegeuk(CheckArea(SymbolType.Taegeuk, grid, 0, 0, 3, 3, report, battleManager, out dummyCount),
+            new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(2, 0), new Vector2Int(0, 1), new Vector2Int(1, 1), new Vector2Int(2, 1), new Vector2Int(0, 2), new Vector2Int(1, 2), new Vector2Int(2, 2));
 
         if (hasTaegeukJackpot)
         {
             report.isTaegeukJackpot = true;
             report.hasWaterJackpot = true;
-            
-            if(report.logs.Count == 0)
+
+            if (report.logs.Count == 0)
             {
-                // 다른 잭팟이 없을 때
                 float taegeukDamage = battleManager.BaseDamage * 77f;
                 totalFinalDamage = taegeukDamage;
 
@@ -175,7 +183,8 @@ public static class DamageCalculator
                 {
                     elementType = battleManager.BossSymbolType,
                     multiplier = 77f,
-                    currentElementDamage = taegeukDamage
+                    currentElementDamage = taegeukDamage,
+                    hitPositions = taegeukHitPositions
                 });
             }
             else
@@ -185,20 +194,27 @@ public static class DamageCalculator
                 {
                     elementType = SymbolType.Taegeuk,
                     multiplier = 77f,
-                    currentElementDamage = totalFinalDamage
+                    currentElementDamage = totalFinalDamage,
+                    hitPositions = taegeukHitPositions
                 });
             }
         }
 
         // 흉 잭팟 독립 판정
         bool hasBadJackpot = false;
+        List<Vector2Int> badHitPositions = new List<Vector2Int>(); // 추가된 리스트
 
-        for (int y = 0; y < 3; y++) if (CheckLine(SymbolType.Bad, grid, 0, y, 1, y, 2, y, report, battleManager, out dummyCount)) hasBadJackpot = true;
-        for (int x = 0; x < 3; x++) if (CheckLine(SymbolType.Bad, grid, x, 0, x, 1, x, 2, report, battleManager, out dummyCount)) hasBadJackpot = true;
-        if (CheckLine(SymbolType.Bad, grid, 0, 0, 1, 1, 2, 2, report, battleManager, out dummyCount)) hasBadJackpot = true;
-        if (CheckLine(SymbolType.Bad, grid, 0, 2, 1, 1, 2, 0, report, battleManager, out dummyCount)) hasBadJackpot = true;
+        void CheckAndAddBad(bool success, params Vector2Int[] positions)
+        {
+            if (success) { hasBadJackpot = true; badHitPositions.AddRange(positions); }
+        }
 
-        if (CheckArea(SymbolType.Bad, grid, 0, 0, 3, 3, report, battleManager, out dummyCount)) hasBadJackpot = true;
+        for (int y = 0; y < 3; y++) CheckAndAddBad(CheckLine(SymbolType.Bad, grid, 0, y, 1, y, 2, y, report, battleManager, out dummyCount), new Vector2Int(0, y), new Vector2Int(1, y), new Vector2Int(2, y));
+        for (int x = 0; x < 3; x++) CheckAndAddBad(CheckLine(SymbolType.Bad, grid, x, 0, x, 1, x, 2, report, battleManager, out dummyCount), new Vector2Int(x, 0), new Vector2Int(x, 1), new Vector2Int(x, 2));
+        CheckAndAddBad(CheckLine(SymbolType.Bad, grid, 0, 0, 1, 1, 2, 2, report, battleManager, out dummyCount), new Vector2Int(0, 0), new Vector2Int(1, 1), new Vector2Int(2, 2));
+        CheckAndAddBad(CheckLine(SymbolType.Bad, grid, 0, 2, 1, 1, 2, 0, report, battleManager, out dummyCount), new Vector2Int(0, 2), new Vector2Int(1, 1), new Vector2Int(2, 0));
+        CheckAndAddBad(CheckArea(SymbolType.Bad, grid, 0, 0, 3, 3, report, battleManager, out dummyCount),
+            new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(2, 0), new Vector2Int(0, 1), new Vector2Int(1, 1), new Vector2Int(2, 1), new Vector2Int(0, 2), new Vector2Int(1, 2), new Vector2Int(2, 2));
 
         if (hasBadJackpot)
         {
@@ -209,7 +225,8 @@ public static class DamageCalculator
             {
                 elementType = SymbolType.Bad,
                 multiplier = 0f,
-                currentElementDamage = 0f
+                currentElementDamage = 0f,
+                hitPositions = badHitPositions 
             });
         }
 

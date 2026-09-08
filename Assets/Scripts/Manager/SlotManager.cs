@@ -23,6 +23,8 @@ public class SlotManager : MonoBehaviour
     public SymbolHighlight highlightClonePrefab; // 방금 만든 클론 프리팹
     public Transform[] slotAnchors = new Transform[9];
 
+    private Dictionary<SymbolType, int> extraSymbolWeights = new Dictionary<SymbolType, int>();
+
     // TODO: Test 삭제 필요
     private void Start()
     {
@@ -109,7 +111,8 @@ public class SlotManager : MonoBehaviour
 
         foreach (var symbol in allAvailableSymbols)
         {
-            int remainingCount = symbol.baseWeight;
+            int bonus = extraSymbolWeights.ContainsKey(symbol.type) ? extraSymbolWeights[symbol.type] : 0;
+            int remainingCount = symbol.baseWeight + bonus;
 
             while (remainingCount > 0) {
                 int stackSize = 1;
@@ -167,6 +170,20 @@ public class SlotManager : MonoBehaviour
         }
 
         return finalStrip;
+    }
+
+    public void AddExtraWeight(SymbolType type, int amount)
+    {
+        if (extraSymbolWeights.ContainsKey(type))
+        {
+            extraSymbolWeights[type] += amount;
+        }
+        else
+        {
+            extraSymbolWeights[type] = amount;
+        }
+
+        SettingReels();
     }
 
     public void PlaySymbolHighlight(Vector2Int pos, Sprite symbolSprite)
