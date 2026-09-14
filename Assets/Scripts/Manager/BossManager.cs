@@ -10,6 +10,8 @@ public class BossManager : MonoBehaviour
 
     public BossData CurrentBoss => currentBoss;
 
+    public RewardManager rewardManager;
+
     [Header("UI 연결")]
     public BossHealthBar healthBarUI;
     public BattleLogUI battleLogUI;
@@ -41,6 +43,8 @@ public class BossManager : MonoBehaviour
         activeGimmick = CreateGimmick(currentSymbol);
         activeGimmick?.Initialize(this);
 
+        rewardManager.InitializeBossReward(currentBoss.maxHPPerPhase, currentBoss.totalPhases);
+
         string initMsg = $"<color=white><b>[{currentBoss.bossName}] 출현! (HP: {currentHP} x {currentPhase}줄, 속성: {currentSymbol.ToString()})</b></color>";
         Debug.Log(initMsg);
         if (battleLogUI != null) battleLogUI.AddLog(initMsg);
@@ -67,6 +71,7 @@ public class BossManager : MonoBehaviour
             string overkillMsg = $"<color=cyan>[피냐타 타격] {damage} 오버킬 누적! (총합: {accumulatedOverkill})</color>";
             Debug.Log(overkillMsg);
             if (battleLogUI != null) battleLogUI.AddLog(overkillMsg);
+            rewardManager.AddPinataGold(damage);
             return;
         }
 
@@ -79,6 +84,8 @@ public class BossManager : MonoBehaviour
                 return;
             }
         }
+
+        if (rewardManager != null) rewardManager.AddDamage(damage);
 
         string hitMsg = $"[타격] 총 {damage} 데미지 유입!";
         Debug.Log(hitMsg);
