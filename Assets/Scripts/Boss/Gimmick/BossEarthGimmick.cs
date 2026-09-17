@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class BossEarthGimmick : IBossGimmick
+public class BossEarthGimmick : IGimmick
 {
     private BossManager bossManager;
     public int remainingEarthLockTurns { get; private set; } = 0;
@@ -26,7 +26,7 @@ public class BossEarthGimmick : IBossGimmick
         if (bossManager.battleLogUI != null) bossManager.battleLogUI.AddLog(lockMsg);
     }
 
-    public void OnReelStopped(SymbolData[,] grid, BattleManager battleManager)
+    public void OnReelStopped(SymbolData[,] grid, BaseBattleManager battleManager)
     {
         // 토 속성은 릴 정지 시 즉발 기믹이 없으므로 비워둠
     }

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BossFireGimmick : IBossGimmick
+public class BossFireGimmick : IGimmick
 {
     private BossManager bossManager;
 
@@ -24,7 +24,7 @@ public class BossFireGimmick : IBossGimmick
         if (bossManager.battleLogUI != null) bossManager.battleLogUI.AddLog(warnMsg);
     }
 
-    public void OnReelStopped(SymbolData[,] grid, BattleManager battleManager)
+    public void OnReelStopped(SymbolData[,] grid, BaseBattleManager battleManager)
     {
         if (pendingFireStacks <= 0) return;
 

@@ -2773,22 +2773,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd6bdaae9925a6d4ca1dabb41eadf096, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleManager
-  battleLogUI: {fileID: 74370930}
-  testBossData: {fileID: 11400000, guid: ecdde01a968c8574597547200d0e3823, type: 2}
   slotManager: {fileID: 79667306}
-  badSymbol: {fileID: 11400000, guid: 081bdc4d8f61ec846bc1f1ee51db341e, type: 2}
+  battleLogUI: {fileID: 74370930}
   popupPrefab: {fileID: 4667416020041416219, guid: d828c96746f855e45ab02ebf6e0666d5, type: 3}
   popupAnchor: {fileID: 139470422}
+  baseTurnLimit: 5
+  testBossData: {fileID: 11400000, guid: ecdde01a968c8574597547200d0e3823, type: 2}
+  badSymbol: {fileID: 11400000, guid: 081bdc4d8f61ec846bc1f1ee51db341e, type: 2}
   resultUI: {fileID: 322967540}
+  myPlayer: {fileID: 0}
   bossManager: {fileID: 1244947931}
   rewardManager: {fileID: 381444823}
-  baseTurnLimit: 5
-  baseDamage: 200
-  lineMultiplier: 2
-  clusterMultiplier: 5
-  allMultiplier: 20
-  taegeukMultiplier: 3
-  badMultiplier: 0.5
 --- !u!4 &1350071167
 Transform:
   m_ObjectHideFlags: 0

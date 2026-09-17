@@ -14,7 +14,7 @@ public class SlotManager : MonoBehaviour
     private bool isSpinning = false;
     public Button spinButton;
 
-    public BattleManager battleManager;
+    public BaseBattleManager battleManager;
 
     private int stoppedReelCount = 0;
     private SymbolData[,] currentGrid = new SymbolData[3, 3];
@@ -42,7 +42,7 @@ public class SlotManager : MonoBehaviour
         if (isSpinning) yield break; // 이미 돌고 있으면 즉시 취소
 
         isSpinning = true;
-        spinButton.interactable = false; // 버튼 비활성화 (시각적 처리)
+        if (spinButton != null) spinButton.interactable = false;
 
         SpinAllReels();
         yield return null;
@@ -52,13 +52,7 @@ public class SlotManager : MonoBehaviour
     {
         stoppedReelCount = 0;
 
-        int lockedIndex = -1;
-        BossManager boss = battleManager.BossManager;
-
-        if (boss.CurrentSymbol == SymbolType.Earth && boss.IsEarthLocked())
-        {
-            lockedIndex = boss.GetLockedReelIndex();
-        }
+        int lockedIndex = battleManager.GetLockedReelIndex();
 
         for (int i = 0; i < reels.Length; ++i)
         {
@@ -200,6 +194,6 @@ public class SlotManager : MonoBehaviour
     public void UnlockSpinButton()
     {
         isSpinning = false;
-        spinButton.interactable = true;
+        if (spinButton != null) spinButton.interactable = true;
     }
 }

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class BossMetalGimmick : IBossGimmick
+public class BossMetalGimmick : IGimmick
 {
     private BossManager bossManager;
 
@@ -39,7 +39,7 @@ public class BossMetalGimmick : IBossGimmick
         if (bossManager.battleLogUI != null) bossManager.battleLogUI.AddLog(sealMsg);
     }
 
-    public void OnReelStopped(SymbolData[,] grid, BattleManager battleManager)
+    public void OnReelStopped(SymbolData[,] grid, BaseBattleManager battleManager)
     {
         // 금 속성은 릴 정지 시 즉발 기믹이 없으므로 비워둠
     }

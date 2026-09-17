@@ -2,7 +2,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BossWoodGimmick : IBossGimmick
+public class BossWoodGimmick : IGimmick
 {
     private BossManager bossManager;
     public List<Vector2Int> corruptedSlots { get; private set; } = new List<Vector2Int>();
@@ -44,7 +44,7 @@ public class BossWoodGimmick : IBossGimmick
         }
     }
 
-    public void OnReelStopped(SymbolData[,] grid, BattleManager battleManager)
+    public void OnReelStopped(SymbolData[,] grid, BaseBattleManager battleManager)
     {
         if(corruptedSlots.Count > 0)
         {

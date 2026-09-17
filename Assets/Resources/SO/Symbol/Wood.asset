@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a117859e772fed4eaec7eece2c575f3, type: 3}
   m_Name: Wood
   m_EditorClassIdentifier: Assembly-CSharp::SymbolData
-  type: 2
+  type: 3
   symbolSprite: {fileID: -1027476081, guid: 8a6cf4c78b534e64492d3b18cd79a91d, type: 3}
   baseWeight: 18

@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a117859e772fed4eaec7eece2c575f3, type: 3}
   m_Name: Water
   m_EditorClassIdentifier: Assembly-CSharp::SymbolData
-  type: 4
+  type: 5
   symbolSprite: {fileID: 1893551871, guid: 8a6cf4c78b534e64492d3b18cd79a91d, type: 3}
   baseWeight: 18

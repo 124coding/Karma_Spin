@@ -30,7 +30,7 @@ public class DamageReport
 public static class DamageCalculator
 {
 
-    public static DamageReport CalculateTotalDamage(SymbolData[,] grid, BattleManager battleManager)
+    public static DamageReport CalculateTotalDamage(SymbolData[,] grid, BaseBattleManager battleManager)
     {
         DamageReport report = new DamageReport();
 
@@ -42,8 +42,8 @@ public static class DamageCalculator
             if (symbol != null) uniqueSymbols.Add(symbol);
         }
 
-        SymbolType bossWeakness = SymbolChart.GetWeakType(battleManager.BossSymbolType);
-        SymbolType bossResist = SymbolChart.GetStrongType(battleManager.BossSymbolType);
+        SymbolType targetWeakness = SymbolChart.GetWeakType(battleManager.TargetSymbolType);
+        SymbolType targetResist = SymbolChart.GetStrongType(battleManager.TargetSymbolType);
 
         foreach (SymbolData symbolData in uniqueSymbols)
         {
@@ -130,12 +130,12 @@ public static class DamageCalculator
                     report.hasWaterJackpot = true;
                 }
 
-                if (symbolData.type == bossWeakness)
+                if (symbolData.type == targetWeakness)
                 {
                     elementMultiplier *= 1.5f;
                     report.logs.Add(new DamageLog { elementType = symbolData.type, multiplier = 1.5f, currentElementDamage = battleManager.BaseDamage * elementMultiplier });
                 }
-                else if (symbolData.type == bossResist)
+                else if (symbolData.type == targetResist)
                 {
                     elementMultiplier *= 0.5f;
                     report.logs.Add(new DamageLog { elementType = symbolData.type, multiplier = 0.5f, currentElementDamage = battleManager.BaseDamage * elementMultiplier });
@@ -181,7 +181,7 @@ public static class DamageCalculator
 
                 report.logs.Add(new DamageLog
                 {
-                    elementType = battleManager.BossSymbolType,
+                    elementType = battleManager.TargetSymbolType,
                     multiplier = 77f,
                     currentElementDamage = taegeukDamage,
                     hitPositions = taegeukHitPositions
@@ -237,11 +237,11 @@ public static class DamageCalculator
     }
 
     // 특정 속성이거나 태극 혹은 흉인지 판단
-    private static bool IsValid(SymbolType targetType, SymbolData s, int x, int y, BattleManager battleManager)
+    private static bool IsValid(SymbolType targetType, SymbolData s, int x, int y, BaseBattleManager battleManager)
     {
         Vector2Int pos = new Vector2Int(x, y);
 
-        bool? customValidity = battleManager.BossManager.EvaluateCustomValidity(pos, targetType, s);
+        bool? customValidity = battleManager.EvaluateCustomValidity(pos, targetType, s);
         if (customValidity.HasValue)
         {
             return customValidity.Value;
@@ -256,7 +256,7 @@ public static class DamageCalculator
     }
 
     // 3칸 라인 판정
-    private static bool CheckLine(SymbolType targetType, SymbolData[,] grid, int x1, int y1, int x2, int y2, int x3, int y3, DamageReport report, BattleManager battleManager, out int taegeukCount)
+    private static bool CheckLine(SymbolType targetType, SymbolData[,] grid, int x1, int y1, int x2, int y2, int x3, int y3, DamageReport report, BaseBattleManager battleManager, out int taegeukCount)
     {
         taegeukCount = 0;
 
@@ -282,7 +282,7 @@ public static class DamageCalculator
         return false;
     }
 
-    private static bool CheckArea(SymbolType targetType, SymbolData[,] grid, int startX, int startY, int width, int height, DamageReport report, BattleManager battleManager, out int taegeukCount)
+    private static bool CheckArea(SymbolType targetType, SymbolData[,] grid, int startX, int startY, int width, int height, DamageReport report, BaseBattleManager battleManager, out int taegeukCount)
     {
         taegeukCount = 0;
 

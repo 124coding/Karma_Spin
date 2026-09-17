@@ -2,7 +2,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BossWaterGimmick : IBossGimmick
+public class BossWaterGimmick : IGimmick
 {
     private BossManager bossManager;
 
@@ -46,7 +46,7 @@ public class BossWaterGimmick : IBossGimmick
         }
     }
 
-    public void OnReelStopped(SymbolData[,] grid, BattleManager battleManager)
+    public void OnReelStopped(SymbolData[,] grid, BaseBattleManager battleManager)
     {
         // 수 속성은 패시브 빙결 기믹이므로 릴 정지 시 즉발 로직 없음
     }

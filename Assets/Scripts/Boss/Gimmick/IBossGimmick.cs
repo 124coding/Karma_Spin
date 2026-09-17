@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public interface IBossGimmick
+public interface IGimmick
 {
     // 전투 시작 시 초기화
     void Initialize(BossManager manager);
@@ -9,7 +9,7 @@ public interface IBossGimmick
     void OnPhaseSkipped(int skippedCount);
 
     // 릴이 멈춘 직후 가계산이나 즉발 효과가 필요할 때 발동
-    void OnReelStopped(SymbolData[,] grid, BattleManager battleManager);
+    void OnReelStopped(SymbolData[,] grid, BaseBattleManager battleManager);
 
     // 턴이 끝날 때 발동
     void OnTurnEnd();

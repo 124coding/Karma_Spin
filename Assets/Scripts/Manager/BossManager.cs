@@ -16,7 +16,7 @@ public class BossManager : MonoBehaviour
     public BossHealthBar healthBarUI;
     public BattleLogUI battleLogUI;
 
-    public IBossGimmick activeGimmick { get; private set; }
+    public IGimmick activeGimmick { get; private set; }
 
     private HashSet<int> triggeredSealPhases = new HashSet<int>();
 
@@ -50,7 +50,7 @@ public class BossManager : MonoBehaviour
         if (battleLogUI != null) battleLogUI.AddLog(initMsg);
     }
 
-    private IBossGimmick CreateGimmick(SymbolType type)
+    private IGimmick CreateGimmick(SymbolType type)
     {
         switch (type)
         {
