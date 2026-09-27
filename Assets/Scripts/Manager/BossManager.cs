@@ -12,6 +12,9 @@ public class BossManager : MonoBehaviour
 
     public RewardManager rewardManager;
 
+    [Header("시스템 연결")]
+    public SlotManager currentSlotManager;
+
     [Header("UI 연결")]
     public BossHealthBar healthBarUI;
     public BattleLogUI battleLogUI;
@@ -147,45 +150,19 @@ public class BossManager : MonoBehaviour
         }
     }
 
-    public int GetLockedReelIndex()
-    {
-        if (activeGimmick is BossEarthGimmick earthGimmick)
-        {
-            return earthGimmick.lockedReelIndex;
-        }
-        return -1;
-    }
-
-    public bool IsEarthLocked()
-    {
-        if (activeGimmick is BossEarthGimmick earthGimmick)
-        {
-            return earthGimmick.remainingEarthLockTurns > 0;
-        }
-        return false;
-    }
-
     public void OnTurnEnd()
     {
         activeGimmick?.OnTurnEnd();
     }
 
-    public void MeltIce(Vector2Int pos)
-    {
-        if (activeGimmick is BossWaterGimmick waterGimmick)
-        {
-            waterGimmick.MeltIce(pos);
-        }
-    }
-
-    public bool? EvaluateCustomValidity(Vector2Int pos, SymbolType targetType, SymbolData s)
-    {
-        if (activeGimmick != null)
-        {
-            return activeGimmick.EvaluateCustomValidity(pos, targetType, s);
-        }
-        return null;
-    }
+    //public bool? EvaluateCustomValidity(Vector2Int pos, SymbolType targetType, SymbolData s)
+    //{
+    //    if (activeGimmick != null)
+    //    {
+    //        return activeGimmick.EvaluateCustomValidity(pos, targetType, s);
+    //    }
+    //    return null;
+    //}
 
     public void ClearAllGimmicks()
     {

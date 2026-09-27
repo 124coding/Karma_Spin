@@ -24,17 +24,31 @@ public abstract class BaseBattleManager : MonoBehaviour
     public abstract float ClusterMultiplier { get; }  // 2x3, 3x2 클러스터 배율
     public abstract float AllMultiplier { get; } // 3x3 전체 배율
     public abstract float TaegeukMultiplier { get; }    // 태극 심볼 배율
-    public abstract float BadMultiplier { get; }    // 흉 심볼 페널티 배율
-
-    public virtual int GetLockedReelIndex()
-    {
-        return -1;
-    }
 
     public abstract SymbolType TargetSymbolType { get; }
 
-    public virtual bool? EvaluateCustomValidity(Vector2Int pos, SymbolType targetType, SymbolData s)
+    public bool? EvaluateCustomValidity(Vector2Int pos, SymbolType targetType, SymbolData s)
     {
+        if (CurrentSlotManager == null || CurrentSlotManager.currentState == SlotGimmickState.Normal) return null;
+
+        bool isAffected = CurrentSlotManager.IsCellAffected(pos);
+
+        switch(CurrentSlotManager.currentState)
+        {
+            case SlotGimmickState.Water_Frozen:
+                if (isAffected)
+                {
+                    if(targetType == SymbolType.Fire) return s.type == SymbolType.Fire || targetType == SymbolType.Taegeuk;
+                    if (targetType == SymbolType.Bad) return true;
+                }
+                break;
+            case SlotGimmickState.Wood_Corrupted:
+            case SlotGimmickState.Fire_Burned:
+                if (isAffected && targetType == SymbolType.Bad) return true;
+                if (isAffected) return false;
+                break;
+        }
+
         return null;
     }
 
@@ -53,29 +67,49 @@ public abstract class BaseBattleManager : MonoBehaviour
 
     protected IEnumerator PlayCommonDamageAnimation(DamageReport report, SymbolData[,] grid, Color defaultColor)
     {
-        // 사용된 빙고 칸 전체 하이라이트 (커지는 연출)
-        if (CurrentSlotManager != null && grid != null)
+        if (report.logs.Count == 0) yield break;
+
+        // 영수증(로그)을 한 줄씩 꺼내보며 순차적으로 연출 진행
+        foreach (var log in report.logs)
         {
-            for (int x = 0; x < 3; x++)
+            if (CurrentSlotManager != null && grid != null && log.hitPositions != null)
             {
-                for (int y = 0; y < 3; y++)
+                foreach (Vector2Int pos in log.hitPositions)
                 {
-                    if (report.isUsedGrid[x, y])
+                    if (grid[pos.x, pos.y].type != SymbolType.Bad)
                     {
-                        if (grid[x, y].type != SymbolType.Bad)
-                        {
-                            CurrentSlotManager.PlaySymbolHighlight(new Vector2Int(x, y), grid[x, y].symbolSprite);
-                        }
+                        CurrentSlotManager.PlaySymbolHighlight(pos, grid[pos.x, pos.y].symbolSprite);
                     }
                 }
             }
-        }
 
-        // 영수증 기반 팝업 순차 연출
-        foreach (var log in report.logs)
-        {
             ShowDamagePopup($"x{log.multiplier}!", defaultColor);
-            yield return new WaitForSeconds(0.5f); // 도파민 뜸 들이기
+
+            yield return new WaitForSeconds(1f);
         }
     }
+
+    protected void ProcessWoodElementReactions(SymbolData[,] grid)
+    {
+        if (CurrentSlotManager == null || CurrentSlotManager.currentState != SlotGimmickState.Wood_Corrupted) return;
+        if (CurrentSlotManager.activeCells.Count == 0) return;
+
+        for (int i = CurrentSlotManager.activeCells.Count - 1; i >= 0; i--)
+        {
+            Vector2Int pos = CurrentSlotManager.activeCells[i];
+            SymbolType landedType = grid[pos.x, pos.y].type;
+
+            // 정화 상호작용
+            if(landedType == SymbolType.Fire || landedType == SymbolType.Earth || landedType == SymbolType.Taegeuk)
+            {
+                CurrentSlotManager.RemoveCellEffect(pos);
+            }
+            else if (landedType == SymbolType.Water)
+            {
+                CurrentSlotManager.SpreadCorruption();
+            }
+        }
+    }
+
+    public virtual float GetTempSymbolMultiplier(SymbolType type) { return 1f; }
 }

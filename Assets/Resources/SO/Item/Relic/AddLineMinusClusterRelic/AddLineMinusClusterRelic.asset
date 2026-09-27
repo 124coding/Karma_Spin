@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 880dd6571bfcf4f43bc0dbdea763754c, type: 3}
+  m_Name: AddLineMinusClusterRelic
+  m_EditorClassIdentifier: Assembly-CSharp::Relic
+  relicName: "\uD55C \uC904\uC774 \uC88B\uC544"
+  description: "\uB77C\uC778 \uC7AD\uD31F\uC758 \uBC30\uC218\uB97C 100% \uC99D\uAC00\uC2DC\uD0A4\uACE0
+    \uBB49\uCE5C \uC7AD\uD31F(2x3, 3x2, 3x3)\uC758 \uBC30\uC218\uB97C 50% \uAC10\uC18C\uD569\uB2C8\uB2E4.  "
+  icon: {fileID: 0}
+  cost: 500
+  effects:
+  - {fileID: 11400000, guid: 609674d3eb5a90f4ba3bb1c5cdd16817, type: 2}

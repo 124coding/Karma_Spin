@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d486d5349cd080a4396a041ce03002bb, type: 3}
+  m_Name: FireDamageAddItem
+  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  itemName: "\uD654\uC5FC \uAC15\uD654"
+  cost: 300
+  itemIcon: {fileID: 0}
+  description: "\uD55C\uD134\uB3D9\uC548 \uD654\uC5FC \uC2EC\uBCFC \uC7AD\uD31F\uC758
+    \uB370\uBBF8\uC9C0\uB97C 50% \uC99D\uAC00\uC2DC\uD0B5\uB2C8\uB2E4."
+  effects:
+  - {fileID: 11400000, guid: 17169e3490892e0469c71093bf9ae00c, type: 2}

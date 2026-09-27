@@ -31,15 +31,15 @@ public class ReelController : MonoBehaviour
 
         while (elapsed < duration)
         {
-            // 시각적 롤링 연출 (2차 함수를 사용하면 초반에는 빠르게 촤라락 하다가 후반에 느려지게 가능할듯)
-            elapsed += Time.deltaTime;
+            // 시각적 롤링 연출
+            elapsed += Time.fixedDeltaTime;
 
             // 2차 함수를 이용한 자연스러운 감속
             float t = elapsed / duration;
             float currentSpeed = Mathf.Lerp(maxSpinSpeed, 100f, t * t);
 
             // 컨테이너를 아래로 이동
-            reelContent.anchoredPosition += Vector2.down * currentSpeed * Time.deltaTime;
+            reelContent.anchoredPosition += Vector2.down * currentSpeed * Time.fixedDeltaTime;
 
             // 심볼 1개 높이만큼 아래로 내려가면 컨베이어 벨트 한 칸 이동
             while(reelContent.anchoredPosition.y <= -symbolHeight)
@@ -49,7 +49,7 @@ public class ReelController : MonoBehaviour
                 UpdateVisuals();
             }
 
-            yield return null;
+            yield return new WaitForFixedUpdate();
         }
 
         float snapDuration = 0.15f;
@@ -59,11 +59,11 @@ public class ReelController : MonoBehaviour
 
         while(snapElapsed < snapDuration)
         {
-            snapElapsed += Time.deltaTime;
+            snapElapsed += Time.fixedDeltaTime;
             float snapT = snapElapsed / snapDuration;
 
             reelContent.anchoredPosition = Vector2.Lerp(startPos, Vector2.zero, snapT);
-            yield return null;
+            yield return new WaitForFixedUpdate();
         }
 
         reelContent.anchoredPosition = Vector2.zero;

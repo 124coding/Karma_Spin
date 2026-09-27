@@ -33,7 +33,6 @@ public class BossBattleManager : BaseBattleManager
     public override float ClusterMultiplier => myPlayer.clusterMultiplier;
     public override float AllMultiplier => myPlayer.allMultiplier;
     public override float TaegeukMultiplier => myPlayer.taegeukMultiplier;
-    public override float BadMultiplier => myPlayer.badMultiplier;
 
     // TODO: Test 삭제 필요
     private void Start()
@@ -70,7 +69,7 @@ public class BossBattleManager : BaseBattleManager
         {
             foreach (Vector2Int icePos in finalReport.meltedIceCoords)
             {
-                bossManager.MeltIce(icePos);
+                bossManager.currentSlotManager.RemoveCellEffect(icePos);
             }
         }
 
@@ -138,23 +137,5 @@ public class BossBattleManager : BaseBattleManager
         bossManager.OnTurnEnd();
 
         if (mySlotManager != null) mySlotManager.UnlockSpinButton();
-    }
-
-    public override int GetLockedReelIndex()
-    {
-        if (bossManager != null && bossManager.CurrentSymbol == SymbolType.Earth && bossManager.IsEarthLocked())
-        {
-            return bossManager.GetLockedReelIndex();
-        }
-        return -1;
-    }
-
-    public override bool? EvaluateCustomValidity(Vector2Int pos, SymbolType targetType, SymbolData s)
-    {
-        if (bossManager != null)
-        {
-            return bossManager.EvaluateCustomValidity(pos, targetType, s);
-        }
-        return null;
     }
 }

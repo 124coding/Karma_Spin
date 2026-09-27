@@ -7,7 +7,7 @@ public class SlotSizeAdjuster : EditorWindow
     private Vector2 symbolSize = new Vector2(100f, 100f); // 심볼 1개의 크기
     private float spacing = 0f; // 심볼 간의 여백
 
-    [MenuItem("Tools/ 슬롯 크기 일괄 조절기")]
+    [MenuItem("Tools/Slot_Size_Adjust")]
     public static void ShowWindow()
     {
         GetWindow<SlotSizeAdjuster>("슬롯 크기 조절기");
