@@ -84,15 +84,6 @@ public class BossMetalGimmick : IGimmick
         }
     }
 
-    public bool? EvaluateCustomValidity(Vector2Int pos, SymbolType targetType, SymbolData s)
-    {
-        return null;
-    }
+    public void ClearGimmick() { bossManager.currentSlotManager.ClearGimmick(); }
 
-    public void ClearGimmick()
-    {
-        isShieldActive = false;
-        currentBreakRequirement = 0f;
-        isShieldJustActivated = false;
-    }
 }

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
 
 // 개별 당첨 내역 하나를 담는 로그 클래스
 public class DamageLog
@@ -84,7 +83,7 @@ public static class DamageCalculator
             if (CheckLine(symbolData.type, grid, 0, 0, 1, 1, 2, 2, report, battleManager, out tCount)) ApplyMatch(battleManager.LineMultiplier, tCount, new List<Vector2Int> { new Vector2Int(0, 0), new Vector2Int(1, 1), new Vector2Int(2, 2) });
             if (CheckLine(symbolData.type, grid, 0, 2, 1, 1, 2, 0, report, battleManager, out tCount)) ApplyMatch(battleManager.LineMultiplier, tCount, new List<Vector2Int> { new Vector2Int(0, 2), new Vector2Int(1, 1), new Vector2Int(2, 0) });
 
-            // 1. 3x3 전체 메가 잭팟
+            // 3x3 전체 메가 잭팟
             if (CheckArea(symbolData.type, grid, 0, 0, 3, 3, report, battleManager, out tCount))
                         ApplyMatch(battleManager.AllMultiplier, tCount, new List<Vector2Int> {
                 new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(2, 0),
@@ -92,7 +91,7 @@ public static class DamageCalculator
                 new Vector2Int(0, 2), new Vector2Int(1, 2), new Vector2Int(2, 2)
             });
 
-                    // 2. 2x3 클러스터 (좌측 2열)
+                    // 2x3 클러스터 (좌측 2열)
                     if (CheckArea(symbolData.type, grid, 0, 0, 2, 3, report, battleManager, out tCount))
                         ApplyMatch(battleManager.ClusterMultiplier, tCount, new List<Vector2Int> {
                 new Vector2Int(0, 0), new Vector2Int(1, 0),
@@ -100,7 +99,7 @@ public static class DamageCalculator
                 new Vector2Int(0, 2), new Vector2Int(1, 2)
             });
 
-                    // 3. 2x3 클러스터 (우측 2열)
+                    // 2x3 클러스터 (우측 2열)
                     if (CheckArea(symbolData.type, grid, 1, 0, 2, 3, report, battleManager, out tCount))
                         ApplyMatch(battleManager.ClusterMultiplier, tCount, new List<Vector2Int> {
                 new Vector2Int(1, 0), new Vector2Int(2, 0),
@@ -108,14 +107,14 @@ public static class DamageCalculator
                 new Vector2Int(1, 2), new Vector2Int(2, 2)
             });
 
-                    // 4. 3x2 클러스터 (상단 2행)
+                    // 3x2 클러스터 (상단 2행)
                     if (CheckArea(symbolData.type, grid, 0, 0, 3, 2, report, battleManager, out tCount))
                         ApplyMatch(battleManager.ClusterMultiplier, tCount, new List<Vector2Int> {
                 new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(2, 0),
                 new Vector2Int(0, 1), new Vector2Int(1, 1), new Vector2Int(2, 1)
             });
 
-                    // 5. 3x2 클러스터 (하단 2행)
+                    // 3x2 클러스터 (하단 2행)
                     if (CheckArea(symbolData.type, grid, 0, 1, 3, 2, report, battleManager, out tCount))
                         ApplyMatch(battleManager.ClusterMultiplier, tCount, new List<Vector2Int> {
                 new Vector2Int(0, 1), new Vector2Int(1, 1), new Vector2Int(2, 1),
@@ -128,6 +127,19 @@ public static class DamageCalculator
                 if (symbolData.type == SymbolType.Water || symbolData.type == SymbolType.Taegeuk)
                 {
                     report.hasWaterJackpot = true;
+                }
+
+                float attributeBuff = battleManager.GetTempSymbolMultiplier(symbolData.type);
+                if(attributeBuff > 1f)
+                {
+                    elementMultiplier *= attributeBuff;
+
+                    report.logs.Add(new DamageLog
+                    {
+                        elementType = symbolData.type,
+                        multiplier = attributeBuff,
+                        currentElementDamage = battleManager.BaseDamage * elementMultiplier
+                    });
                 }
 
                 if (symbolData.type == targetWeakness)

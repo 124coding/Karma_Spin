@@ -5,16 +5,16 @@ using UnityEngine;
 public class BossWoodGimmick : IGimmick
 {
     private BossManager bossManager;
-    public List<Vector2Int> corruptedSlots { get; private set; } = new List<Vector2Int>();
 
     public void Initialize(BossManager bossManager)
     {
         this.bossManager = bossManager;
-        corruptedSlots.Clear();
     }
 
     public void OnPhaseSkipped(int skippedCount)
     {
+        if (!bossManager.currentSlotManager.TryApplyGimmick(SlotGimmickState.Wood_Corrupted)) return;
+
         List<Vector2Int> availableSlots = new List<Vector2Int>();
 
         for(int x = 0; x < 3; ++x)
@@ -22,10 +22,9 @@ public class BossWoodGimmick : IGimmick
             for (int y = 0; y < 3; ++y)
             {
                 Vector2Int pos = new Vector2Int(x, y);
-                if (!corruptedSlots.Contains(pos))
-                {
-                    availableSlots.Add(pos);
-                }
+
+                // ½½·Ô ¸Å´ÏÀú¿¡°Ô ¿À¿°µÇÁö ¾ÊÀº Ä­À» ¹°¾îº½
+                if (!bossManager.currentSlotManager.IsCellAffected(pos)) availableSlots.Add(pos);
             }
         }
 
@@ -34,105 +33,19 @@ public class BossWoodGimmick : IGimmick
             if (availableSlots.Count == 0) break;
 
             int randomIndex = Random.Range(0, availableSlots.Count);
-            Vector2Int chosenSlot = availableSlots[randomIndex];
-            corruptedSlots.Add(chosenSlot);
+
+            bossManager.currentSlotManager.AddActiveCell(availableSlots[randomIndex]);
             availableSlots.RemoveAt(randomIndex);
 
-            string spreadMsg = $"<color=green>[Àá½Ä ¹ßµ¿] ({chosenSlot.x}, {chosenSlot.y}) Ä­ÀÌ ±â»ý µ¢±¼¿¡ ¿À¿°µÇ¾ú½À´Ï´Ù!</color>";
+            string spreadMsg = $"<color=green>[Àá½Ä ¹ßµ¿] ({availableSlots[randomIndex].x}, {availableSlots[randomIndex].y}) Ä­ÀÌ ±â»ý µ¢±¼¿¡ ¿À¿°µÇ¾ú½À´Ï´Ù!</color>";
             Debug.Log(spreadMsg);
             if (bossManager.battleLogUI != null) bossManager.battleLogUI.AddLog(spreadMsg);
         }
     }
 
-    public void OnReelStopped(SymbolData[,] grid, BaseBattleManager battleManager)
-    {
-        if(corruptedSlots.Count > 0)
-        {
-            for(int i = corruptedSlots.Count - 1; i >= 0; --i)
-            {
-                Vector2Int pos = corruptedSlots[i];
-                SymbolData landedSymbol = grid[pos.x, pos.y];
+    public void OnReelStopped(SymbolData[,] grid, BaseBattleManager battleManager) {}
 
-                if (landedSymbol.type == SymbolType.Fire || landedSymbol.type == SymbolType.Earth || landedSymbol.type == SymbolType.Taegeuk)
-                {
-                    PurifyWood(pos);
-                }
-                else if (landedSymbol.type == SymbolType.Water)
-                {
-                    string waterMsg = $"<color=blue>[¿µ¾ç °ø±Þ] µ¢±¼ÀÌ ¹°À» ¸Ó±Ý°í ¼ºÀåÇÕ´Ï´Ù!</color>";
-                    Debug.Log(waterMsg);
-                    if (bossManager.battleLogUI != null) bossManager.battleLogUI.AddLog(waterMsg);
+    public void OnTurnEnd() { }
 
-                    SpreadWood();
-                }
-            }
-        }
-    }
-
-    public void OnTurnEnd()
-    {
-        if(corruptedSlots.Count > 0)
-        {
-            SpreadWood();
-        }
-    }
-
-    public void SpreadWood()
-    {
-        if (corruptedSlots.Count == 0 || corruptedSlots.Count >= 9) return;
-
-        List<Vector2Int> availableNeighbors = new List<Vector2Int>();
-        Vector2Int[] directions = {Vector2Int.up, Vector2Int.down, Vector2Int.right,  Vector2Int.left};
-
-        foreach(var slot in corruptedSlots)
-        {
-            foreach(var dir in directions)
-            {
-                Vector2Int neighbor = slot + dir;
-                if (neighbor.x >= 0 && neighbor.x < 3 && neighbor.y >= 0 && neighbor.y < 3)
-                {
-                    if (!corruptedSlots.Contains(neighbor) && !availableNeighbors.Contains(neighbor))
-                    {
-                        availableNeighbors.Add(neighbor);
-                    }
-                }
-            }
-        }
-
-        if(availableNeighbors.Count > 0)
-        {
-            Vector2Int target = availableNeighbors[Random.Range(0, availableNeighbors.Count)];
-            corruptedSlots.Add(target);
-
-            string spreadMsg = $"<color=green>[Àá½Ä] ±â»ý µ¢±¼ÀÌ ({target.x}, {target.y}) Ä­À¸·Î »¸¾î³ª°©´Ï´Ù!</color>";
-            Debug.Log(spreadMsg);
-            if (bossManager.battleLogUI != null) bossManager.battleLogUI.AddLog(spreadMsg);
-        }
-    }
-
-    public void PurifyWood(Vector2Int pos)
-    {
-        if (corruptedSlots.Contains(pos))
-        {
-            corruptedSlots.Remove(pos);
-            string purifyMsg = $"<color=orange>[Á¤È­] ({pos.x}, {pos.y})ÀÇ ±â»ý µ¢±¼ÀÌ Á¦°ÅµÇ¾ú½À´Ï´Ù!</color>";
-            Debug.Log(purifyMsg);
-            if (bossManager.battleLogUI != null) bossManager.battleLogUI.AddLog(purifyMsg);
-        }
-    }
-
-    public bool? EvaluateCustomValidity(Vector2Int pos, SymbolType targetType, SymbolData s)
-    {
-        if (corruptedSlots.Contains(pos))
-        {
-            if (targetType == SymbolType.Bad) return true;
-            return false;
-        }
-        return null;
-    }
-
-    public void ClearGimmick()
-    {
-        corruptedSlots.Clear();
-    }
+    public void ClearGimmick() { bossManager.currentSlotManager.ClearGimmick(); }
 }

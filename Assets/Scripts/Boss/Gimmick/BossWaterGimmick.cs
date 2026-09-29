@@ -6,16 +6,15 @@ public class BossWaterGimmick : IGimmick
 {
     private BossManager bossManager;
 
-    public List<Vector2Int> frozenSlots { get; private set; } = new List<Vector2Int>();
-
     public void Initialize(BossManager bossManager)
     {
         this.bossManager = bossManager;
-        frozenSlots.Clear();
     }
 
     public void OnPhaseSkipped(int skippedCount)
     {
+        if (!bossManager.currentSlotManager.TryApplyGimmick(SlotGimmickState.Water_Frozen)) return;
+
         List<Vector2Int> availableSlots = new List<Vector2Int>();
 
         for(int x = 0; x < 3; ++x)
@@ -24,23 +23,19 @@ public class BossWaterGimmick : IGimmick
             {
                 Vector2Int pos = new Vector2Int(x, y);
 
-                if (!frozenSlots.Contains(pos))
-                {
-                    availableSlots.Add(pos);
-                }
+                if (!bossManager.currentSlotManager.IsCellAffected(pos)) availableSlots.Add(pos);
             }
         }
 
         for(int i = 0; i < skippedCount; ++i)
         {
             if (availableSlots.Count <= 0) break;
-
             int randomIndex = Random.Range(0, availableSlots.Count);
-            Vector2Int chosenSlot = availableSlots[randomIndex];
-            frozenSlots.Add(chosenSlot);
+
+            bossManager.currentSlotManager.AddActiveCell(availableSlots[randomIndex]);
             availableSlots.RemoveAt(randomIndex);
 
-            string freezeMsg = $"<color=cyan>[빙결 발동] ({chosenSlot.x}, {chosenSlot.y}) 칸이 얼어붙었습니다!</color>";
+            string freezeMsg = $"<color=cyan>[빙결 발동] ({availableSlots[randomIndex].x}, {availableSlots[randomIndex].y}) 칸이 얼어붙었습니다!</color>";
             Debug.Log(freezeMsg);
             if (bossManager.battleLogUI != null) bossManager.battleLogUI.AddLog(freezeMsg);
         }
@@ -55,38 +50,6 @@ public class BossWaterGimmick : IGimmick
     {
     }
 
-    public void MeltIce(Vector2Int pos)
-    {
-        if (frozenSlots.Contains(pos))
-        {
-            frozenSlots.Remove(pos);
-            string meltMsg = $"<color=red>[해빙] 불꽃이 ({pos.x}, {pos.y})의 얼음을 녹였습니다!</color>";
-            Debug.Log(meltMsg);
-            if (bossManager.battleLogUI != null) bossManager.battleLogUI.AddLog(meltMsg);
-        }
-    }
+    public void ClearGimmick() { bossManager.currentSlotManager.ClearGimmick(); }
 
-    public bool? EvaluateCustomValidity(Vector2Int pos, SymbolType targetType, SymbolData s)
-    {
-        if (frozenSlots.Contains(pos))
-        {
-            if(targetType == SymbolType.Fire)
-            {
-                // 타겟 속성이 불일때는 심볼이 불 혹은 태극이면 허용
-                return s.type == SymbolType.Fire || s.type == SymbolType.Taegeuk;
-            }
-            if(targetType == SymbolType.Bad)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        return null;
-    }
-
-    public void ClearGimmick()
-    {
-        frozenSlots.Clear();
-    }
 }

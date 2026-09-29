@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d486d5349cd080a4396a041ce03002bb, type: 3}
+  m_Name: MetalShieldItem
+  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  itemName: "\uBCF4\uD638\uB9C9"
+  cost: 300
+  itemIcon: {fileID: 0}
+  description: "1500\uC758 \uBCF4\uD638\uB9C9\uC744 \uC774\uBC88 \uD134 \uB3D9\uC548
+    \uC5BB\uC2B5\uB2C8\uB2E4."
+  effects:
+  - {fileID: 11400000, guid: a0f56142ef096b746baa4cc6308ed9d3, type: 2}

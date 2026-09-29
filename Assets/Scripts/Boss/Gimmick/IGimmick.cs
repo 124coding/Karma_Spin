@@ -14,8 +14,5 @@ public interface IGimmick
     // 턴이 끝날 때 발동
     void OnTurnEnd();
 
-    // 특정 좌표 오염 확인
-    bool? EvaluateCustomValidity(Vector2Int pos, SymbolType targetType, SymbolData s);
-
     void ClearGimmick();
 }
