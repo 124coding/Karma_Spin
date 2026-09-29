@@ -1,6 +1,8 @@
 # 🎰 캐주얼 전략 PvP 슬롯 배틀 Karma_Spin (Casual Strategy PvP Slot Battle)
 
-![Game Preview]([인게임_대표_이미지_또는_움짤_링크_삽입])
+<img width="535" height="305" alt="Image" src="https://github.com/user-attachments/assets/f0bc4bd3-846f-49f7-b55e-f30c324c4f69" />
+
+**[실행 가능한 빌드 다운로드](https://drive.google.com/file/d/1xOX_q9--SASNTQUEteUNt68ziUP7WiwV/view?usp=sharing)**
 
 슬롯머신의 '무작위성(Randomness)'과 로그라이크 유물 시스템을 활용한 '덱빌딩(Deckbuilding) 전략'이 결합된 1:1 실시간 네트워크 턴제 대전 게임입니다. 운에만 의존하는 것이 아니라, 실시간 상호작용 기믹과 속성 간의 시너지를 통해 다이나믹한 전투를 경험할 수 있습니다.
 
