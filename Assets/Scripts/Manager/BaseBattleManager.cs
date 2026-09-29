@@ -1,5 +1,6 @@
-using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
 public abstract class BaseBattleManager : MonoBehaviour
 {
@@ -27,6 +28,10 @@ public abstract class BaseBattleManager : MonoBehaviour
 
     public abstract SymbolType TargetSymbolType { get; }
 
+    [Header("얼음 연쇄 파훼용 데이터")]
+    public bool isDummyCalculation = false; // 현재 계산이 미리보기(가계산) 중인지
+    public HashSet<Vector2Int> thawedIceCoordsThisTurn = new HashSet<Vector2Int>(); // 이번 스핀에 깨질 얼음 좌표들
+
     public bool? EvaluateCustomValidity(Vector2Int pos, SymbolType targetType, SymbolData s)
     {
         if (CurrentSlotManager == null || CurrentSlotManager.currentState == SlotGimmickState.Normal) return null;
@@ -38,11 +43,34 @@ public abstract class BaseBattleManager : MonoBehaviour
             case SlotGimmickState.Water_Frozen:
                 if (isAffected)
                 {
-                    if(targetType == SymbolType.Fire) return s.type == SymbolType.Fire || targetType == SymbolType.Taegeuk;
-                    if (targetType == SymbolType.Bad) return true;
+                    if (!isDummyCalculation && thawedIceCoordsThisTurn.Contains(pos))
+                    {
+                        return null; // null을 반환하면 계산기가 알아서 태극/속성 판정을 해줍니다.
+                    }
+
+                    if (targetType == SymbolType.Fire)
+                        return s.type == SymbolType.Fire || s.type == SymbolType.Taegeuk;
+                    if (targetType == SymbolType.Wood)
+                        return s.type == SymbolType.Wood || s.type == SymbolType.Taegeuk;
+                    if (targetType == SymbolType.Bad)
+                        return true;
+
+                    return false;
                 }
                 break;
             case SlotGimmickState.Wood_Corrupted:
+                if (isAffected)
+                {
+                    if (s.type == SymbolType.Fire || s.type == SymbolType.Earth || s.type == SymbolType.Taegeuk)
+                    {
+                        return null;
+                    }
+
+                    if (targetType == SymbolType.Bad) return true;
+                    return false;
+                }
+                break;
+
             case SlotGimmickState.Fire_Burned:
                 if (isAffected && targetType == SymbolType.Bad) return true;
                 if (isAffected) return false;
@@ -89,24 +117,80 @@ public abstract class BaseBattleManager : MonoBehaviour
         }
     }
 
-    protected void ProcessWoodElementReactions(SymbolData[,] grid)
+    protected void ProcessElementReactions(SymbolData[,] grid, DamageReport report)
     {
-        if (CurrentSlotManager == null || CurrentSlotManager.currentState != SlotGimmickState.Wood_Corrupted) return;
-        if (CurrentSlotManager.activeCells.Count == 0) return;
+        if (CurrentSlotManager == null || CurrentSlotManager.currentState == SlotGimmickState.Normal) return;
+        if (CurrentSlotManager.activeCells.Count == 0 && CurrentSlotManager.currentState != SlotGimmickState.Fire_Burned) return;
 
+        SlotGimmickState state = CurrentSlotManager.currentState;
+
+        // 화염(Fire_Burned) 상호작용: 수(Water) 잭팟이 터지면 불이 꺼짐
+        if (state == SlotGimmickState.Fire_Burned)
+        {
+            if (report.hasWaterJackpot)
+            {
+                Debug.Log("<color=blue>[상호작용] 수(Water) 잭팟이 터져 화염이 모두 진화되었습니다!</color>");
+                CurrentSlotManager.pendingActionCount = 0;
+                CurrentSlotManager.ClearFirePositions();
+                CurrentSlotManager.ClearGimmick();
+            }
+        }
+
+        // 잠식(Wood_Corrupted) & 빙결(Water_Frozen) 타일 상호작용
         for (int i = CurrentSlotManager.activeCells.Count - 1; i >= 0; i--)
         {
             Vector2Int pos = CurrentSlotManager.activeCells[i];
             SymbolType landedType = grid[pos.x, pos.y].type;
 
-            // 정화 상호작용
-            if(landedType == SymbolType.Fire || landedType == SymbolType.Earth || landedType == SymbolType.Taegeuk)
+            if (state == SlotGimmickState.Wood_Corrupted)
             {
-                CurrentSlotManager.RemoveCellEffect(pos);
+                // [잠식 파훼] 불, 대지, 태극이 떨어지면 오염 정화
+                if (landedType == SymbolType.Fire || landedType == SymbolType.Earth || landedType == SymbolType.Taegeuk)
+                {
+                    Debug.Log($"<color=green>[상호작용] {landedType} 속성으로 덩굴을 태웠습니다!</color>");
+                    CurrentSlotManager.RemoveCellEffect(pos);
+                }
+                // [잠식 악화] 물이 떨어지면 오염 확산
+                else if (landedType == SymbolType.Water)
+                {
+                    CurrentSlotManager.SpreadCorruption();
+                }
             }
-            else if (landedType == SymbolType.Water)
+            else if (state == SlotGimmickState.Water_Frozen)
             {
-                CurrentSlotManager.SpreadCorruption();
+                // [빙결 파훼] 해당 칸을 포함하는 불(Fire) 또는 목(Wood) 빙고가 터졌는지 확인
+                bool isIceBroken = false;
+
+                foreach (var log in report.logs)
+                {
+                    // 이 빙고(잭팟) 영역에 얼어붙은 칸(pos)이 포함되어 있다면
+                    if (log.hitPositions != null && log.hitPositions.Contains(pos))
+                    {
+                        // 빙고에 포함된 칸들 중 하나라도 화염이나 목 속성이 있는지 확인 (태극이 섞여도 판정 가능)
+                        bool isFireOrWoodBingo = false;
+                        foreach (Vector2Int hitPos in log.hitPositions)
+                        {
+                            SymbolType hitType = grid[hitPos.x, hitPos.y].type;
+                            if (hitType == SymbolType.Fire || hitType == SymbolType.Wood)
+                            {
+                                isFireOrWoodBingo = true;
+                                break; // 하나라도 확인되면 해당 빙고는 화염/목 속성 빙고로 인정
+                            }
+                        }
+
+                        if (isFireOrWoodBingo)
+                        {
+                            isIceBroken = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (isIceBroken)
+                {
+                    Debug.Log($"<color=cyan>[상호작용] 화염/목 속성 빙고가 폭발하여 ({pos.x}, {pos.y})의 얼음이 산산조각 났습니다!</color>");
+                    CurrentSlotManager.RemoveCellEffect(pos);
+                }
             }
         }
     }

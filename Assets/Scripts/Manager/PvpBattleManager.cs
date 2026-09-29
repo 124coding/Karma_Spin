@@ -61,7 +61,7 @@ public class PvpBattleManager : BaseBattleManager
         int seedFor1P = roundDice.Next();
         int seedFor2P = roundDice.Next();
 
-        if (NetworkTest.Instance.myPlayerIndex == 1)
+        if (myPlayerIndex == 1)
         {
             slotManager1P.SettingReels(seedFor1P);
             slotManager2P.SettingReels(seedFor2P);
@@ -93,7 +93,7 @@ public class PvpBattleManager : BaseBattleManager
     public float maxTugGauge = 10000f;
 
     [Header("힘겨루기 데이터")]
-    public float pendingDamage = 0f; // 선턴 플레이어가 뽑아둔 대기 데미지
+    public int pendingDamage = 0; // 선턴 플레이어가 뽑아둔 대기 데미지
     public bool isFirstSpinOfRound = true; // 현재 스핀이 라운드의 첫 번째 스핀인지
 
     [Header("라운드 스코어")]
@@ -118,6 +118,10 @@ public class PvpBattleManager : BaseBattleManager
 
     public static PvpBattleManager Instance;
 
+    public int myPlayerIndex;
+
+    [HideInInspector] public int currentSpinnerIndex = -1;
+
     private void Awake()
     {
         if (Instance == null) Instance = this;
@@ -130,7 +134,9 @@ public class PvpBattleManager : BaseBattleManager
         int seedFor1P = initDice.Next();
         int seedFor2P = initDice.Next();
 
-        if (NetworkTest.Instance.myPlayerIndex == 1)
+        player1.OnGoldChanged += uiManager.SetGoldText;
+
+        if (myPlayerIndex == 1)
         {
             // 내가 1P라면: 왼쪽이 1P 시드, 오른쪽이 2P 시드
             ResetFullGame(seedFor1P, seedFor2P);
@@ -142,10 +148,8 @@ public class PvpBattleManager : BaseBattleManager
         }
     }
 
-    private void Start()
-    {
-        player1.OnGoldChanged += uiManager.SetGoldText;
-
+    private void Start() 
+    { 
         player1.OnShieldChanged += uiManager.SetP1ShieldText;
         player2.OnShieldChanged += uiManager.SetP2ShieldText;
     }
@@ -153,6 +157,7 @@ public class PvpBattleManager : BaseBattleManager
     private void OnDestroy()
     {
         player1.OnGoldChanged -= uiManager.SetGoldText;
+        player2.OnGoldChanged -= uiManager.SetGoldText;
 
         player1.OnShieldChanged -= uiManager.SetP1ShieldText;
         player2.OnShieldChanged -= uiManager.SetP2ShieldText;
@@ -162,17 +167,14 @@ public class PvpBattleManager : BaseBattleManager
     {
         currentTurns = baseTurnLimit;
         currentTugGauge = 0f;
-        isMyTurn = false;
         isFirstSpinOfRound = true;
-        pendingDamage = 0f;
+        pendingDamage = 0;
 
         slotManager1P.ClearGimmick();
         slotManager2P.ClearGimmick();
 
         player1.ResetTurnData();
         player2.ResetTurnData();
-        player1.currentShieldHP = 0f;
-        player2.currentShieldHP = 0f;
 
         player1.TriggerBattleStart(slotManager1P);
         player2.TriggerBattleStart(slotManager2P);
@@ -180,50 +182,57 @@ public class PvpBattleManager : BaseBattleManager
         uiManager.RefreshAllInventoryUI();
         uiManager.UpdateTugGaugeText(currentTugGauge);
 
-        uiManager.UpdateBoardDimState(true);
-        uiManager.SetSpinButtonInteractable(true);
+        UpdateTurnUI();
 
     }
 
+    public void UpdateTurnUI()
+    {
+        int displayTurn = baseTurnLimit - currentTurns + 1;
+
+        if (displayTurn > baseTurnLimit) displayTurn = baseTurnLimit;
+
+        if (uiManager != null)
+        {
+            uiManager.SetTurnText(displayTurn, baseTurnLimit);
+        }
+    }
+
     [HideInInspector] public int currentTurnSeed;
+    [HideInInspector] public bool isAnimating;
 
     public void UpdateTurnState(int currentTurnPlayer, int resetSeed)
     {
         currentTurnSeed = resetSeed;
-        isMyTurn = (currentTurnPlayer == NetworkTest.Instance.myPlayerIndex);
+        isMyTurn = (currentTurnPlayer == myPlayerIndex);
 
-        if (currentTurnPlayer == 1)
+        if (isMyTurn) player1.ResetTurnData();
+        else player2.ResetTurnData();
+
+        bool isP1Turn = (currentTurnPlayer == 1);
+
+        uiManager.UpdateBoardDimState(isMyTurn, isP1Turn);
+        uiManager.SetSpinButtonInteractable(isMyTurn);
+
+        if (!isAnimating)
         {
-            player1.ResetTurnData();
-        }
-        else
-        {
-            player2.ResetTurnData();
+            uiManager.SetSpinButtonInteractable(isMyTurn);
         }
 
-
-        if (isMyTurn)
-        {
-            Debug.Log("나의 턴");
-            uiManager.SetSpinButtonInteractable(true);
-            uiManager.UpdateBoardDimState(true);
-        }
-        else
-        {
-            Debug.Log("상대 턴");
-            uiManager.SetSpinButtonInteractable(false);
-            uiManager.UpdateBoardDimState(false);
-        }
+        if (isMyTurn) Debug.Log($"나의 턴입니다! (나는 {myPlayerIndex}P)");
+        else Debug.Log($"상대 턴입니다! (나는 {myPlayerIndex}P)");
     }
 
     public void OnClickSpinButton()
     {
-        if (!isMyTurn) return;
+        if (!isMyTurn || isAnimating) return;
+
+        isAnimating = true;
         uiManager.SetSpinButtonInteractable(false);
 
-        if (NetworkTest.Instance != null)
+        if (NetworkBattleController.Instance != null)
         {
-            NetworkTest.Instance.SendSpinRequest();
+            NetworkBattleController.Instance.RequestSpin(myPlayerIndex);
         }
         else
         {
@@ -235,7 +244,12 @@ public class PvpBattleManager : BaseBattleManager
     {
         Debug.Log("서버의 스핀 명령 수신! 양쪽 릴을 동시에 회전시킵니다.");
 
-        if (actionPlayerIndex == NetworkTest.Instance.myPlayerIndex)
+        currentSpinnerIndex = actionPlayerIndex;
+
+        isAnimating = true;
+        uiManager.SetSpinButtonInteractable(false);
+
+        if (actionPlayerIndex == myPlayerIndex)
         {
             slotManager1P.ExecuteNetworkSpinSequence();
         }
@@ -255,7 +269,7 @@ public class PvpBattleManager : BaseBattleManager
 
     public void ExecuteNetworkItemUse(int actionPlayerIndex, int slotIndex, int reelSeed)
     {
-        bool didIUse = (actionPlayerIndex == NetworkTest.Instance.myPlayerIndex);
+        bool didIUse = (actionPlayerIndex == myPlayerIndex);
         PlayerManager userPlayer = didIUse ? player1 : player2;
 
         currentItemCaster = didIUse ? player1 : player2;
@@ -284,68 +298,104 @@ public class PvpBattleManager : BaseBattleManager
 
     public override void OnReelStopped(SymbolData[,] grid)
     {
-        // 보스 기믹을 묻지 않고 순수하게 계산기 호출
+        isDummyCalculation = true;
+        thawedIceCoordsThisTurn.Clear();
+        DamageReport dummyReport = DamageCalculator.CalculateTotalDamage(grid, this);
+
+        if (CurrentSlotManager != null && CurrentSlotManager.currentState == SlotGimmickState.Water_Frozen)
+        {
+            foreach (var log in dummyReport.logs)
+            {
+                // 이 빙고가 화염이나 나무 속성이 섞인 잭팟인지 확인
+                bool isBreakerBingo = false;
+                foreach (var pos in log.hitPositions)
+                {
+                    if (grid[pos.x, pos.y].type == SymbolType.Fire || grid[pos.x, pos.y].type == SymbolType.Wood)
+                    {
+                        isBreakerBingo = true;
+                        break;
+                    }
+                }
+
+                // 화염/나무 잭팟이라면, 그 라인에 껴있는 얼음 칸을 파훼 리스트에 추가
+                if (isBreakerBingo)
+                {
+                    foreach (var pos in log.hitPositions)
+                    {
+                        if (CurrentSlotManager.IsCellAffected(pos))
+                        {
+                            thawedIceCoordsThisTurn.Add(pos);
+                        }
+                    }
+                }
+            }
+        }
+
+        isDummyCalculation = false;
         DamageReport report = DamageCalculator.CalculateTotalDamage(grid, this);
 
-        bool wasMyTurn = isMyTurn;
+        // 기믹 상호작용
+        ProcessElementReactions(grid, report);
 
-        StartCoroutine(PvpDamageRoutine(report, grid, wasMyTurn));
+        bool didISpin = (currentSpinnerIndex == myPlayerIndex);
+
+        StartCoroutine(PvpDamageRoutine(report, grid, didISpin));
     }
 
-    private IEnumerator PvpDamageRoutine(DamageReport report, SymbolData[,] grid, bool wasMyTurn)
+    private IEnumerator PvpDamageRoutine(DamageReport report, SymbolData[,] grid, bool didISpin)
     {
-        Color playerColor = isMyTurn ? Color.cyan : new Color(1f, 0.4f, 0.4f);
+        Color playerColor = didISpin ? Color.cyan : new Color(1f, 0.4f, 0.4f);
         yield return StartCoroutine(PlayCommonDamageAnimation(report, grid, playerColor));
 
         if (isFirstSpinOfRound)
         {
-            ProcessFirstTurn(report.finalDamage);
+            ProcessFirstTurn(Mathf.CeilToInt(report.finalDamage), didISpin);
         }
         else
         {
-            yield return StartCoroutine(ProcessClashRoutine(report.finalDamage));
+            yield return StartCoroutine(ProcessClashRoutine(Mathf.CeilToInt(report.finalDamage), didISpin));
         }
 
-        HandleTurnEnd(wasMyTurn);
+        HandleTurnEnd(didISpin);
     }
 
     // 선턴 처리
-    private void ProcessFirstTurn(float damage)
+    private void ProcessFirstTurn(int damage, bool didIspin)
     {
         pendingDamage = damage;
         isFirstSpinOfRound = false;
 
-        uiManager.ShowPendingDamage(pendingDamage, isMyTurn);
+        uiManager.ShowPendingDamage(pendingDamage, didIspin);
     }
 
-    private IEnumerator ProcessClashRoutine(float secondDamage)
+    private IEnumerator ProcessClashRoutine(int secondDamage, bool didISpin)
     {
-        uiManager.ShowSecondDamage(secondDamage, isMyTurn);
+        uiManager.ShowSecondDamage(secondDamage, didISpin);
 
         yield return new WaitForSeconds(1.0f);
 
         // 데미지 차액 계산
-        float myDamage = isMyTurn ? secondDamage : pendingDamage;
-        float enemyDamage = isMyTurn ? pendingDamage : secondDamage;
+        int myDamage = didISpin ? secondDamage : pendingDamage;
+        int enemyDamage = didISpin ? pendingDamage : secondDamage;
 
-        float rawNetDamage = enemyDamage - myDamage;
-        float finalNetDamage = 0f;
+        int rawNetDamage = enemyDamage - myDamage;
+        int finalNetDamage = 0;
 
         if (rawNetDamage > 0)
         {
-            float damageToP1 = CalculateDamageThroughShield(rawNetDamage, player1);
+            int damageToP1 = CalculateDamageThroughShield(rawNetDamage, player1);
             finalNetDamage = damageToP1;
         }
         else if (rawNetDamage < 0)
         {
-            float damageToP2 = CalculateDamageThroughShield(Mathf.Abs(rawNetDamage), player2);
+            int damageToP2 = CalculateDamageThroughShield(Mathf.Abs(rawNetDamage), player2);
             finalNetDamage = -damageToP2;
         }
-        else finalNetDamage = 0f;
+        else finalNetDamage = 0;
 
         // TODO: 두 데미지 부딪히는 애니메이션 실행
 
-        currentTugGauge += finalNetDamage;
+        currentTugGauge += Mathf.CeilToInt(finalNetDamage);
         uiManager.UpdateTugGaugeText(currentTugGauge);
 
         yield return new WaitForSeconds(0.5f);
@@ -354,16 +404,18 @@ public class PvpBattleManager : BaseBattleManager
 
         isFirstSpinOfRound = true;
         currentTurns--;
+
+        UpdateTurnUI();
     }
 
-    private float CalculateDamageThroughShield(float damage, PlayerManager defender)
+    private int CalculateDamageThroughShield(int damage, PlayerManager defender)
     {
         if (defender.currentShieldHP <= 0) return damage;
 
         if(defender.currentShieldHP >= damage)
         {
             defender.currentShieldHP -= damage;
-            return 0f;
+            return 0;
         }
         else
         {
@@ -394,6 +446,9 @@ public class PvpBattleManager : BaseBattleManager
         {
             spinnerSlot.ClearGimmick();
         }
+
+        spinnerSlot.ClearFirePositions();
+
         if (spinnerSlot != null)
         {
             spinnerSlot.SpreadCorruption();
@@ -406,6 +461,20 @@ public class PvpBattleManager : BaseBattleManager
 
         if (slotManager1P != null) slotManager1P.UnlockSpinButton();
         if (slotManager2P != null) slotManager2P.UnlockSpinButton();
+
+        isAnimating = false;
+
+        if (wasMyTurn)
+        {
+            isMyTurn = false;
+        }
+
+        uiManager.SetSpinButtonInteractable(isMyTurn);
+
+        if (wasMyTurn && NetworkBattleController.Instance != null)
+        {
+            NetworkBattleController.Instance.RequestTurnEnd(myPlayerIndex);
+        }
 
         if (currentTurns <= 0)
         {
@@ -442,13 +511,6 @@ public class PvpBattleManager : BaseBattleManager
                 shopManager.OpenShop(this);
             }
         }
-        else
-        {
-            if (wasMyTurn && NetworkTest.Instance != null)
-            {
-                NetworkTest.Instance.SendTurnEnd();
-            }
-        }
     }
 
     public void ResetFullGame(int mySeed, int enemySeed)
@@ -462,6 +524,8 @@ public class PvpBattleManager : BaseBattleManager
 
         player1.gold = 0;
         player2.gold = 0;
+
+        uiManager.SetGoldText(player1.gold);
 
         player1.activeInventory.Clear();
         player1.relics.Clear();

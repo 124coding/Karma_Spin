@@ -9,7 +9,6 @@ public class ShopSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     public Image iconImage;
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI costText;
-    public TextMeshProUGUI descText;
     public Button buyButton;
 
     // 공통 매니저 및 플레이어 정보
@@ -58,7 +57,11 @@ public class ShopSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
         buyer = player;
         buyerSlotManager = slotManager; // 유물은 획득 즉시 장착되므로 타겟 슬롯매니저가 필요함
 
-        if (iconImage != null) iconImage.sprite = relic.icon; // Relic 클래스에 icon 변수가 있어야 함
+        if (iconImage != null)
+        {
+            iconImage.sprite = relic.icon;
+            iconImage.color = Color.white;
+        }
         nameText.text = relic.relicName;
         costText.text = $"{relic.cost}G";
         // descText.text = relic.description;
@@ -86,6 +89,7 @@ public class ShopSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     {
         buyButton.interactable = false;
         nameText.text = "SOLD OUT";
+        costText.text = "";
         if (iconImage != null) iconImage.color = Color.gray;
     }
 

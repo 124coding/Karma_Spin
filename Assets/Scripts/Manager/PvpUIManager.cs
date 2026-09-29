@@ -21,6 +21,7 @@ public class PvpUIManager : MonoBehaviour
     public TextMeshProUGUI secondDamageText;  // 후턴 텍스트
     public Button centralSpinButton;
     public TextMeshProUGUI centralSpinText;
+    public TextMeshProUGUI turnText;
 
     [Header("각 쉴드 UI")]
     public TextMeshProUGUI p1ShieldText;
@@ -77,17 +78,17 @@ public class PvpUIManager : MonoBehaviour
         }
     }
 
-    public void ShowPendingDamage(float damage, bool isP1Turn)
+    public void ShowPendingDamage(float damage, bool isMyTurn)
     {
         pendingDamageText.text = damage.ToString();
-        pendingDamageText.color = isP1Turn ? Color.cyan : new Color(1f, 0.4f, 0.4f);
+        pendingDamageText.color = isMyTurn ? Color.cyan : new Color(1f, 0.4f, 0.4f);
         pendingDamageText.gameObject.SetActive(true);
     }
 
-    public void ShowSecondDamage(float damage, bool isP1Turn)
+    public void ShowSecondDamage(float damage, bool isMyTurn)
     {
         secondDamageText.text = damage.ToString();
-        secondDamageText.color = isP1Turn ? Color.cyan : new Color(1f, 0.4f, 0.4f);
+        secondDamageText.color = isMyTurn ? Color.cyan : new Color(1f, 0.4f, 0.4f);
         secondDamageText.gameObject.SetActive(true);
     }
 
@@ -106,10 +107,10 @@ public class PvpUIManager : MonoBehaviour
         }
     }
 
-    public void UpdateBoardDimState(bool isP1Turn)
+    public void UpdateBoardDimState(bool isMyTurn, bool isP1Turn)
     {
-        if(dimPanel1P != null) dimPanel1P.SetActive(!isP1Turn);
-        if(dimPanel2P != null) dimPanel2P.SetActive(isP1Turn);
+        if (dimPanel1P != null) dimPanel1P.SetActive(!isMyTurn);
+        if (dimPanel2P != null) dimPanel2P.SetActive(isMyTurn);
 
         centralSpinButton.image.color = isP1Turn ? Color.cyan : new Color(1f, 0.4f, 0.4f);
         centralSpinText.text = isP1Turn ? "1P SPIN" : "2P SPIN";
@@ -123,6 +124,11 @@ public class PvpUIManager : MonoBehaviour
     public void SetGoldText(int amount)
     {
         goldText.text = amount > 0 ? amount.ToString() + "G" : "0G";
+    }
+
+    public void SetTurnText(int currentTurn, int bastTurnLimit)
+    {
+        turnText.text = currentTurn.ToString() + " / " + bastTurnLimit.ToString();
     }
 
     public void SetP1ShieldText(float amount)
@@ -188,9 +194,9 @@ public class PvpUIManager : MonoBehaviour
 
     public void OnClickReturnToLobby()
     {
-        if(NetworkTest.Instance != null)
+        if (Unity.Netcode.NetworkManager.Singleton != null)
         {
-            NetworkTest.Instance.DisconnectFromServer();
+            Unity.Netcode.NetworkManager.Singleton.Shutdown();
         }
 
         SceneManager.LoadScene("LobbyScene");

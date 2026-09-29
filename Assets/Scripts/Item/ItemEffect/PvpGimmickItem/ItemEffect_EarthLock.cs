@@ -16,7 +16,7 @@ public class ItemEffect_EarthLock : ItemEffect
                 // 성공했다면 잠글 릴 번호를 지정
                 int targetReelIndex = rng.Next(0, 3);
 
-                targetSlot.activeReelIndex = targetReelIndex;
+                targetSlot.ApplyEarthLock(targetReelIndex);
 
                 return true;
 

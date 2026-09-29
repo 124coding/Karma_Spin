@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Relic_Effect_Stat Boost
   m_EditorClassIdentifier: Assembly-CSharp::RelicEffect_StatBoost
   baseDamageBonus: 1.05
-  lineMultiplierBonus: 0
-  clusterMultiplierBonus: 0
-  allMultiplierBonus: 0
-  taegeukMultiplierBonus: 0
+  lineMultiplierBonus: 1
+  clusterMultiplierBonus: 1
+  allMultiplierBonus: 1
+  taegeukMultiplierBonus: 1

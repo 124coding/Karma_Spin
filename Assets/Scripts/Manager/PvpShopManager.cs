@@ -192,12 +192,9 @@ public class PvpShopManager : MonoBehaviour
         }
 
         string jsonData = JsonUtility.ToJson(syncData);
-        GamePacket packet = new GamePacket { packetType = 4, player = NetworkTest.Instance.myPlayerIndex, data = jsonData };
-
-        // 서버로 Ready 패킷 발송
-        if (NetworkTest.Instance != null)
+        if (NetworkBattleController.Instance != null)
         {
-            NetworkTest.Instance.SendPacket(packet);
+            NetworkBattleController.Instance.RequestReady(currentBattleManager.myPlayerIndex, jsonData);
         }
     }
 

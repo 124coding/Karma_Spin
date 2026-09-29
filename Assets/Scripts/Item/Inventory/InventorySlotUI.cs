@@ -39,9 +39,9 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (!PvpBattleManager.Instance.IsMyTurn) return;
 
         int slotIndex = parentUI.activeSlots.IndexOf(this);
-        if (slotIndex != -1)
+        if (slotIndex != -1 && NetworkBattleController.Instance != null)
         {
-            NetworkTest.Instance.SendItemUse(slotIndex);
+            NetworkBattleController.Instance.RequestItemUse(PvpBattleManager.Instance.myPlayerIndex, slotIndex);
         }
     }
 

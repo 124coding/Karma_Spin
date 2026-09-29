@@ -28,13 +28,38 @@ public class SlotManager : MonoBehaviour
     public List<Vector2Int> activeCells = new List<Vector2Int>();
     public int pendingActionCount = 0;
 
+    [Header("시각화 컨트롤러 연결")]
+    public SlotVisualController visualController;
+
+    private void RefreshVisuals()
+    {
+        if (visualController != null)
+        {
+            visualController.UpdateVisuals(currentState, activeReelIndex, activeCells);
+        }
+    }
+
     public void AddActiveCell(Vector2Int pos)
     {
         if (!activeCells.Contains(pos))
         {
             activeCells.Add(pos);
 
-            // TODO: currentState에 따라 pos 좌표에 맞는 연출 키기
+            RefreshVisuals();
+        }
+    }
+
+    public void RemoveCellEffect(Vector2Int pos)
+    {
+        if (activeCells.Contains(pos))
+        {
+            activeCells.Remove(pos);
+            RefreshVisuals();
+
+            if(activeCells.Count == 0 && currentState != SlotGimmickState.Earth_Locked && pendingActionCount == 0)
+            {
+                ClearGimmick();
+            }
         }
     }
 
@@ -58,24 +83,26 @@ public class SlotManager : MonoBehaviour
         currentState = SlotGimmickState.Normal;
         activeReelIndex = -1;
         activeCells.Clear();
-        // TODO: 슬롯판 전체를 덮고 있던 기믹 연출 끄기
+        RefreshVisuals();
     }
-    public bool IsCellAffected(Vector2Int pos) => activeCells.Contains(pos);
 
-
-    public void RemoveCellEffect(Vector2Int pos)
+    public void ClearFirePositions()
     {
-        if (activeCells.Contains(pos))
+        if (currentState == SlotGimmickState.Fire_Burned)
         {
-            activeCells.Remove(pos);
-            // TODO: 해당 칸 연출(얼음, 덩굴 등) 끄기
+            activeCells.Clear();
+            RefreshVisuals();
 
-            if (activeCells.Count == 0 && currentState != SlotGimmickState.Earth_Locked && pendingActionCount == 0)
-            {
-                ClearGimmick();
-            }
         }
     }
+
+    public void ApplyEarthLock(int reelIndex)
+    {
+        activeReelIndex = reelIndex;
+        RefreshVisuals();
+    }
+
+    public bool IsCellAffected(Vector2Int pos) => activeCells.Contains(pos);
 
     public void SpreadCorruption()
     {
@@ -127,7 +154,6 @@ public class SlotManager : MonoBehaviour
 
             AddActiveCell(available[rand]);
             available.RemoveAt(rand);
-            // TODO: 불타는 UI 추가
         }
         pendingActionCount = 0;
     }
@@ -173,6 +199,7 @@ public class SlotManager : MonoBehaviour
             SettingReels(syncSeed);
         }
     }
+
     public void InitializeNetworkGame(int syncSeed)
     {
         SettingReels(syncSeed); // 네트워크 공통 시드가 맞춰진 직후에 릴 생성

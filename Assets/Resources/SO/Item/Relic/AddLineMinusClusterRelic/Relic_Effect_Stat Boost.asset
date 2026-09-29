@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17ebb870570e45e4f9a742f81cd6c261, type: 3}
   m_Name: Relic_Effect_Stat Boost
   m_EditorClassIdentifier: Assembly-CSharp::RelicEffect_StatBoost
-  baseDamageBonus: 0
+  baseDamageBonus: 1
   lineMultiplierBonus: 2
   clusterMultiplierBonus: 0.5
-  allMultiplierBonus: 0
-  taegeukMultiplierBonus: 0
+  allMultiplierBonus: 1
+  taegeukMultiplierBonus: 1
